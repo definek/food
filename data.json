@@ -1,1 +1,48 @@
-
+{
+  "foods": [
+    {
+      "id": "food001",
+      "name": "계란",
+      "qty": 10,
+      "place": "냉장"
+    },
+    {
+      "id": "food002",
+      "name": "닭가슴살",
+      "qty": 5,
+      "place": "냉동"
+    },
+    {
+      "id": "food003",
+      "name": "감자",
+      "qty": 6,
+      "place": "실온"
+    },
+    {
+      "id": "food004",
+      "name": "우유",
+      "qty": 2,
+      "place": "냉장"
+    }
+  ],
+  "todos": [
+    {
+      "id": "todo001",
+      "text": "계란 주문하기",
+      "done": false,
+      "bg": ""
+    },
+    {
+      "id": "todo002",
+      "text": "냉동실 정리하기",
+      "done": false,
+      "bg": "background:#dff3ff"
+    },
+    {
+      "id": "todo003",
+      "text": "우유 확인하기",
+      "done": true,
+      "bg": ""
+    }
+  ]
+}
