@@ -1,1 +1,846 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7">
+<title>냉장고 + 할일 관리</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f5f7;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.app{max-width:720px;margin:auto;padding:14px 12px 70px}
+header{padding:6px 4px 14px}
+h1{font-size:28px;margin:0}
+.sub{font-size:13px;color:#888;margin-top:3px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#e5e5ea;border-radius:13px;padding:3px;margin-bottom:12px}
+.tab{border:0;background:transparent;padding:10px;border-radius:10px;font-weight:700;color:#666}
+.tab.active{background:#fff;color:#111}
+.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:11px;box-shadow:0 2px 12px #0000000b}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat{background:#f7f7f8;padding:13px;border-radius:14px}
+.stat small{color:#777}
+.stat b{display:block;font-size:24px;margin-top:4px}
+.section-title{font-size:18px;font-weight:800;margin-bottom:12px}
+label{display:block;font-size:12px;color:#777;margin:4px 0 5px}
+input,select,button{font:inherit}
+input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:11px;background:#fafafa;outline:none}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+button{border:0;border-radius:11px;padding:11px 12px;font-weight:700;cursor:pointer}
+.primary{background:#1d1d1f;color:#fff}
+.gray{background:#eee}
+.danger{background:#fff0f0;color:#d00}
+.item{padding:13px 0;border-bottom:1px solid #eee}
+.item:last-child{border-bottom:0}
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.name{font-weight:800}
+.meta{font-size:12px;color:#888;margin-top:4px}
+.qtybox{display:flex;align-items:center;gap:5px}
+.qty{min-width:32px;text-align:center;font-weight:800}
+.small{padding:7px 10px}
+.todo{display:flex;align-items:center;gap:9px;padding:12px 0;border-bottom:1px solid #eee}
+.todo:last-child{border-bottom:0}
+.todo.done{background:#eee;border-radius:12px;padding:12px;margin:4px 0;border:0}
+.todo.done .text{text-decoration:line-through;color:#999}
+.check{width:25px;height:25px;padding:0;border:1px solid #ccc;background:#fff;flex:none}
+.text{flex:1;font-weight:650}
+.actions{display:flex;gap:5px}
+.empty{text-align:center;color:#999;padding:25px 0}
+.notice{font-size:12px;color:#777;background:#f7f7f8;border-radius:11px;padding:9px;margin-top:12px}
+</style>
+</head>
 
+<body>
+<div class="app">
+
+<header>
+<h1>🧊 냉장고 관리</h1>
+<div class="sub">HTML + data.json + localStorage</div>
+</header>
+
+<div class="tabs">
+<button id="fridgeTab" class="tab active">냉장고</button>
+<button id="todoTab" class="tab">할일</button>
+</div>
+
+<section id="fridgeSection">
+
+<div class="grid">
+<div class="stat">
+<small>상품 종류</small>
+<b id="foodCount">0</b>
+</div>
+
+<div class="stat">
+<small>전체 수량</small>
+<b id="foodQty">0</b>
+</div>
+</div>
+
+<div class="card" style="margin-top:11px">
+
+<div class="section-title">상품 추가</div>
+
+<div class="row">
+
+<div>
+<label>상품명</label>
+<input id="foodName" placeholder="예: 계란">
+</div>
+
+<div style="max-width:100px">
+<label>수량</label>
+<input id="foodQtyInput" type="number" min="1" value="1">
+</div>
+
+</div>
+
+<div style="margin-top:8px">
+
+<label>보관 위치</label>
+
+<select id="foodPlace">
+<option>냉장</option>
+<option>냉동</option>
+<option>실온</option>
+</select>
+
+</div>
+
+<button id="addFoodBtn" class="primary" style="width:100%;margin-top:10px">
++ 상품 추가
+</button>
+
+</div>
+
+<div class="card">
+<input id="foodSearch" placeholder="🔍 상품 검색">
+</div>
+
+<div class="card">
+<div id="foodList"></div>
+</div>
+
+</section>
+
+
+<section id="todoSection" style="display:none">
+
+<div class="card">
+
+<div class="section-title">할일 추가</div>
+
+<div class="row">
+
+<input id="todoInput" placeholder="예: 계란 주문하기">
+
+<button id="addTodoBtn" class="primary">
+추가
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="section-title">할일 목록</div>
+
+<div id="todoList"></div>
+
+</div>
+
+<div class="row">
+
+<button id="resetColors" class="gray">
+전체 배경색 초기화
+</button>
+
+<button id="clearDone" class="danger">
+완료 삭제
+</button>
+
+</div>
+
+</section>
+
+
+<div class="notice">
+
+초기 데이터는 <b>data.json</b>에서 읽고,
+이후 변경사항은 이 브라우저의 <b>localStorage</b>에 저장합니다.
+
+</div>
+
+</div>
+
+
+<script>
+
+const STORAGE_KEY="fridge_todo_json_v2";
+
+let db={
+foods:[],
+todos:[]
+};
+
+
+const $=id=>document.getElementById(id);
+
+
+function uid(){
+
+return Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8);
+
+}
+
+
+function esc(s){
+
+return String(s).replace(/[&<>"']/g,m=>({
+
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#039;"
+
+}[m]));
+
+}
+
+
+async function init(){
+
+try{
+
+const saved=localStorage.getItem(STORAGE_KEY);
+
+if(saved){
+
+const x=JSON.parse(saved);
+
+db={
+foods:Array.isArray(x.foods)?x.foods:[],
+todos:Array.isArray(x.todos)?x.todos:[]
+};
+
+}else{
+
+const r=await fetch("data.json",{cache:"no-store"});
+
+if(!r.ok){
+
+throw new Error("data.json을 읽을 수 없습니다.");
+
+}
+
+const x=await r.json();
+
+db={
+foods:Array.isArray(x.foods)?x.foods:[],
+todos:Array.isArray(x.todos)?x.todos:[]
+};
+
+save();
+
+}
+
+}catch(e){
+
+console.error(e);
+
+alert("data.json을 불러오지 못했습니다.");
+
+db={
+foods:[],
+todos:[]
+};
+
+}
+
+renderFood();
+renderTodo();
+
+}
+
+
+function save(){
+
+localStorage.setItem(
+STORAGE_KEY,
+JSON.stringify(db)
+);
+
+}
+
+
+function renderFood(){
+
+const q=$("foodSearch").value.trim().toLowerCase();
+
+const list=db.foods.filter(
+x=>x.name.toLowerCase().includes(q)
+);
+
+$("foodCount").textContent=db.foods.length;
+
+$("foodQty").textContent=
+db.foods.reduce(
+(a,x)=>a+Number(x.qty||0),
+0
+);
+
+
+if(!list.length){
+
+$("foodList").innerHTML=
+'<div class="empty">등록된 상품이 없습니다.</div>';
+
+return;
+
+}
+
+
+$("foodList").innerHTML=list.map(x=>`
+
+<div class="item">
+
+<div class="head">
+
+<div>
+
+<div class="name">
+${esc(x.name)}
+</div>
+
+<div class="meta">
+${esc(x.place)} · ${x.qty}개
+</div>
+
+</div>
+
+
+<div class="qtybox">
+
+<button
+class="gray small"
+data-f="-1"
+data-id="${x.id}">
+−
+</button>
+
+<div class="qty">
+${x.qty}
+</div>
+
+<button
+class="gray small"
+data-f="1"
+data-id="${x.id}">
++
+</button>
+
+</div>
+
+</div>
+
+
+<div style="margin-top:8px">
+
+<button
+class="gray small"
+data-edit="${x.id}">
+수정
+</button>
+
+<button
+class="danger small"
+data-del="${x.id}">
+삭제
+</button>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function addFood(){
+
+const name=$("foodName").value.trim();
+
+const qty=
+Math.max(
+1,
+parseInt($("foodQtyInput").value)||1
+);
+
+const place=$("foodPlace").value;
+
+
+if(!name){
+
+alert("상품명을 입력하세요.");
+
+$("foodName").focus();
+
+return;
+
+}
+
+
+const old=db.foods.find(
+x=>x.name===name&&x.place===place
+);
+
+
+if(old){
+
+old.qty=Number(old.qty)+qty;
+
+}else{
+
+db.foods.unshift({
+
+id:uid(),
+
+name:name,
+
+qty:qty,
+
+place:place
+
+});
+
+}
+
+
+save();
+
+$("foodName").value="";
+
+$("foodQtyInput").value=1;
+
+renderFood();
+
+}
+
+
+function changeFood(id,d){
+
+const x=db.foods.find(
+v=>v.id===id
+);
+
+if(!x)return;
+
+x.qty=Number(x.qty)+d;
+
+if(x.qty<=0){
+
+db.foods=db.foods.filter(
+v=>v.id!==id
+);
+
+}
+
+save();
+
+renderFood();
+
+}
+
+
+function editFood(id){
+
+const x=db.foods.find(
+v=>v.id===id
+);
+
+if(!x)return;
+
+const n=prompt(
+"상품명",
+x.name
+);
+
+if(n===null||!n.trim())return;
+
+const p=prompt(
+"보관 위치: 냉장 / 냉동 / 실온",
+x.place
+);
+
+if(p===null)return;
+
+x.name=n.trim();
+
+if(
+["냉장","냉동","실온"].includes(
+p.trim()
+)
+){
+
+x.place=p.trim();
+
+}
+
+save();
+
+renderFood();
+
+}
+
+
+function deleteFood(id){
+
+if(!confirm("상품을 삭제할까요?"))
+return;
+
+db.foods=db.foods.filter(
+v=>v.id!==id
+);
+
+save();
+
+renderFood();
+
+}
+
+
+function renderTodo(){
+
+if(!db.todos.length){
+
+$("todoList").innerHTML=
+'<div class="empty">할일이 없습니다.</div>';
+
+return;
+
+}
+
+
+$("todoList").innerHTML=db.todos.map(x=>`
+
+<div
+class="todo ${x.done?"done":""}"
+style="${esc(x.bg||"")}"
+>
+
+<button
+class="check"
+data-t="toggle"
+data-id="${x.id}">
+${x.done?"✓":""}
+</button>
+
+<div class="text">
+${esc(x.text)}
+</div>
+
+<div class="actions">
+
+<button
+class="gray small"
+data-t="color"
+data-id="${x.id}">
+색
+</button>
+
+<button
+class="gray small"
+data-t="edit"
+data-id="${x.id}">
+수정
+</button>
+
+<button
+class="danger small"
+data-t="del"
+data-id="${x.id}">
+삭제
+</button>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function addTodo(){
+
+const text=$("todoInput").value.trim();
+
+if(!text){
+
+alert("할일을 입력하세요.");
+
+return;
+
+}
+
+
+db.todos.push({
+
+id:uid(),
+
+text:text,
+
+done:false,
+
+bg:""
+
+});
+
+
+save();
+
+$("todoInput").value="";
+
+renderTodo();
+
+}
+
+
+function toggleTodo(id){
+
+const x=db.todos.find(
+v=>v.id===id
+);
+
+if(x){
+
+x.done=!x.done;
+
+save();
+
+renderTodo();
+
+}
+
+}
+
+
+function editTodo(id){
+
+const x=db.todos.find(
+v=>v.id===id
+);
+
+if(!x)return;
+
+const t=prompt(
+"할일 수정",
+x.text
+);
+
+if(t&&t.trim()){
+
+x.text=t.trim();
+
+save();
+
+renderTodo();
+
+}
+
+}
+
+
+function deleteTodo(id){
+
+if(!confirm("삭제할까요?"))
+return;
+
+db.todos=db.todos.filter(
+v=>v.id!==id
+);
+
+save();
+
+renderTodo();
+
+}
+
+
+function colorTodo(id){
+
+const x=db.todos.find(
+v=>v.id===id
+);
+
+if(!x)return;
+
+const colors=[
+
+"",
+"background:#fff2cc",
+"background:#dff3ff",
+"background:#e5f6df",
+"background:#f2e5ff",
+"background:#ffe3e3"
+
+];
+
+const i=Math.max(
+0,
+colors.indexOf(x.bg||"")
+);
+
+x.bg=
+colors[
+(i+1)%colors.length
+];
+
+save();
+
+renderTodo();
+
+}
+
+
+function resetColors(){
+
+db.todos.forEach(
+x=>x.bg=""
+);
+
+save();
+
+renderTodo();
+
+}
+
+
+function clearDone(){
+
+db.todos=
+db.todos.filter(
+x=>!x.done
+);
+
+save();
+
+renderTodo();
+
+}
+
+
+$("fridgeTab").onclick=()=>{
+
+$("fridgeSection").style.display="block";
+
+$("todoSection").style.display="none";
+
+$("fridgeTab").classList.add("active");
+
+$("todoTab").classList.remove("active");
+
+};
+
+
+$("todoTab").onclick=()=>{
+
+$("fridgeSection").style.display="none";
+
+$("todoSection").style.display="block";
+
+$("todoTab").classList.add("active");
+
+$("fridgeTab").classList.remove("active");
+
+};
+
+
+$("addFoodBtn").onclick=addFood;
+
+$("addTodoBtn").onclick=addTodo;
+
+$("foodSearch").oninput=renderFood;
+
+$("resetColors").onclick=resetColors;
+
+$("clearDone").onclick=clearDone;
+
+
+$("foodName").onkeydown=e=>{
+
+if(e.key==="Enter")
+addFood();
+
+};
+
+
+$("todoInput").onkeydown=e=>{
+
+if(e.key==="Enter")
+addTodo();
+
+};
+
+
+$("foodList").onclick=e=>{
+
+const b=e.target.closest("button");
+
+if(!b)return;
+
+const id=b.dataset.id;
+
+if(b.dataset.f)
+changeFood(id,Number(b.dataset.f));
+
+else if(b.dataset.edit)
+editFood(b.dataset.edit);
+
+else if(b.dataset.del)
+deleteFood(b.dataset.del);
+
+};
+
+
+$("todoList").onclick=e=>{
+
+const b=e.target.closest("button");
+
+if(!b)return;
+
+const id=b.dataset.id;
+
+switch(b.dataset.t){
+
+case"toggle":
+toggleTodo(id);
+break;
+
+case"color":
+colorTodo(id);
+break;
+
+case"edit":
+editTodo(id);
+break;
+
+case"del":
+deleteTodo(id);
+break;
+
+}
+
+};
+
+
+init();
+
+</script>
+
+</body>
+</html>
