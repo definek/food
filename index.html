@@ -3,844 +3,221 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f5f7">
-<title>냉장고 + 할일 관리</title>
+<meta name="theme-color" content="#e9eef2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1114" media="(prefers-color-scheme: dark)">
+<title>냉장고 재고 · 할일 · 문자</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f5f5f7;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
-.app{max-width:720px;margin:auto;padding:14px 12px 70px}
-header{padding:6px 4px 14px}
-h1{font-size:28px;margin:0}
-.sub{font-size:13px;color:#888;margin-top:3px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;background:#e5e5ea;border-radius:13px;padding:3px;margin-bottom:12px}
-.tab{border:0;background:transparent;padding:10px;border-radius:10px;font-weight:700;color:#666}
-.tab.active{background:#fff;color:#111}
-.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:11px;box-shadow:0 2px 12px #0000000b}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.stat{background:#f7f7f8;padding:13px;border-radius:14px}
-.stat small{color:#777}
-.stat b{display:block;font-size:24px;margin-top:4px}
-.section-title{font-size:18px;font-weight:800;margin-bottom:12px}
-label{display:block;font-size:12px;color:#777;margin:4px 0 5px}
-input,select,button{font:inherit}
-input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:11px;background:#fafafa;outline:none}
-.row{display:flex;gap:8px}
-.row>*{flex:1}
-button{border:0;border-radius:11px;padding:11px 12px;font-weight:700;cursor:pointer}
-.primary{background:#1d1d1f;color:#fff}
-.gray{background:#eee}
-.danger{background:#fff0f0;color:#d00}
-.item{padding:13px 0;border-bottom:1px solid #eee}
-.item:last-child{border-bottom:0}
-.head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.name{font-weight:800}
-.meta{font-size:12px;color:#888;margin-top:4px}
-.qtybox{display:flex;align-items:center;gap:5px}
-.qty{min-width:32px;text-align:center;font-weight:800}
-.small{padding:7px 10px}
-.todo{display:flex;align-items:center;gap:9px;padding:12px 0;border-bottom:1px solid #eee}
-.todo:last-child{border-bottom:0}
-.todo.done{background:#eee;border-radius:12px;padding:12px;margin:4px 0;border:0}
-.todo.done .text{text-decoration:line-through;color:#999}
-.check{width:25px;height:25px;padding:0;border:1px solid #ccc;background:#fff;flex:none}
-.text{flex:1;font-weight:650}
-.actions{display:flex;gap:5px}
-.empty{text-align:center;color:#999;padding:25px 0}
-.notice{font-size:12px;color:#777;background:#f7f7f8;border-radius:11px;padding:9px;margin-top:12px}
+:root{
+  --bg:#e9eef2; --surface:#ffffff; --surface-2:#f2f5f9; --bar:rgba(233,238,242,.82);
+  --ink:#101519; --ink-2:#5d6b78; --ink-on:#ffffff;
+  --line:#dbe3ea; --focus:#2e7fa8;
+  --chill:#2e7fa8; --freeze:#4b5fd1; --room:#a8761c;
+  --plus:#0f8f83; --minus:#cf4f46; --bubble:#2e7fa8;
+  --plus-soft:rgba(15,143,131,.11); --minus-soft:rgba(207,79,70,.11);
+  --r:16px;
+  --shadow:0 1px 2px rgba(16,21,25,.05), 0 8px 22px rgba(16,21,25,.055);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0d1114; --surface:#161c21; --surface-2:#1c242a; --bar:rgba(13,17,20,.82);
+    --ink:#e8eef3; --ink-2:#94a2ad; --ink-on:#0d1114;
+    --line:#28313a; --focus:#6fb6d8;
+    --chill:#6fb6d8; --freeze:#8e9bf0; --room:#d9a94a;
+    --plus:#3fbfad; --minus:#f0736a; --bubble:#2c6c8e;
+    --plus-soft:rgba(63,191,173,.13); --minus-soft:rgba(240,115,106,.13);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.28);
+  }
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  line-height:1.45;-webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.app{max-width:560px;margin:0 auto;padding:20px 16px calc(104px + env(safe-area-inset-bottom))}
+
+/* ── header ─────────────────────────────── */
+.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--ink-2)}
+h1{margin:7px 0 0;font-size:31px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+h1 span{font-weight:300;color:var(--ink-2)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stat{background:var(--surface);border:0;padding:11px 12px 12px;text-align:left;cursor:pointer;display:block}
+.stat__k{display:block;font-size:11px;color:var(--ink-2)}
+.stat__v{display:block;font-size:23px;font-weight:600;letter-spacing:-.02em;margin-top:1px}
+.stat__v i{font-style:normal;font-size:11.5px;font-weight:400;color:var(--ink-2);margin-left:3px}
+.stat--alert .stat__v{color:var(--minus)}
+
+/* ── tabs ───────────────────────────────── */
+.tabs{position:relative;display:grid;grid-template-columns:repeat(3,1fr);margin:14px 0 16px;padding:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px}
+.thumb{position:absolute;top:4px;left:4px;height:calc(100% - 8px);width:calc((100% - 8px)/3);background:var(--surface);border-radius:10px;box-shadow:var(--shadow);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.tab{position:relative;z-index:1;border:0;background:transparent;padding:9px 4px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.tab.is-on{color:var(--ink)}
+
+/* ── chips + search ─────────────────────── */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.chip.is-on{background:var(--ink);border-color:var(--ink);color:var(--ink-on)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--zone,currentColor)}
+.search{position:relative;margin-bottom:12px}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-2)}
+.search input{padding-left:38px}
+input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;outline:none;appearance:none}
+input::placeholder,textarea::placeholder{color:var(--ink-2);opacity:.75}
+input:focus,select:focus,textarea:focus{border-color:var(--focus)}
+textarea{resize:vertical;line-height:1.55}
+
+/* ── list rows ──────────────────────────── */
+.list{display:flex;flex-direction:column;gap:8px}
+.row{position:relative;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);background:var(--surface)}
+.row.in{animation:rise .4s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 26ms)}
+@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.track{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;opacity:0;transition:opacity .12s}
+.row.is-drag .track{opacity:1}
+.row.dir-plus .track{background:var(--plus-soft)}
+.row.dir-minus .track{background:var(--minus-soft)}
+.hint{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;letter-spacing:-.01em}
+.hint b{font-size:27px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.hint--plus{color:var(--plus)}
+.hint--minus{color:var(--minus)}
+.card{position:relative;display:flex;align-items:center;gap:8px;padding:13px 10px 13px 15px;background:var(--surface);border-left:3px solid var(--zone,var(--line));touch-action:pan-y;will-change:transform;user-select:none;-webkit-user-select:none}
+.card .more{width:30px;height:34px;background:transparent;font-size:17px;letter-spacing:1px}
+.card .more:active{background:var(--surface-2)}
+.main{flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;cursor:pointer}
+.name{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:12px;color:var(--ink-2)}
+.tag{padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:600;letter-spacing:.01em}
+.tag--low{background:var(--minus-soft);color:var(--minus)}
+.tag--out{background:var(--minus);color:#fff}
+.stepper{flex:none;display:flex;align-items:center;padding:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px}
+.stepper button{width:33px;height:33px;border:0;background:transparent;border-radius:9px;font-size:17px;font-weight:600;line-height:1;cursor:pointer}
+.stepper button:active{background:var(--line)}
+.stepper button[disabled]{opacity:.3}
+.qty{min-width:36px;text-align:center;font-size:17px;font-weight:600}
+.qty.up{animation:bump .34s;color:var(--plus)}
+.qty.down{animation:bump .34s;color:var(--minus)}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.32)}100%{transform:scale(1)}}
+.empty{padding:34px 18px;text-align:center;color:var(--ink-2);font-size:13.5px;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);line-height:1.6}
+
+/* ── todo ───────────────────────────────── */
+.todo{display:flex;align-items:center;gap:11px;padding:13px 14px;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow)}
+.check{flex:none;width:26px;height:26px;padding:0;border:1.5px solid var(--line);border-radius:9px;background:var(--surface);font-size:14px;line-height:1;cursor:pointer}
+.todo.done .check{background:var(--ink);border-color:var(--ink);color:var(--ink-on)}
+.todo .text{flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;font-size:15px;font-weight:500;cursor:pointer;word-break:break-word}
+.todo.done .text{text-decoration:line-through;color:var(--ink-2)}
+.todo.has-bg,.todo.has-bg .text{color:#141a1f}
+.todo.has-bg .check{border-color:rgba(20,26,31,.22);background:rgba(255,255,255,.65);color:#141a1f}
+.todo.has-bg.done .check{background:#141a1f;border-color:#141a1f;color:#fff}
+.todo.has-bg.done .text{color:rgba(20,26,31,.45)}
+.todo.has-bg .icon{background:rgba(255,255,255,.6);color:#4b5763}
+.icon{flex:none;width:32px;height:32px;padding:0;border:0;border-radius:9px;background:var(--surface-2);color:var(--ink-2);font-size:13px;cursor:pointer}
+
+/* ── 문자 ────────────────────────────────── */
+.card-box{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:15px}
+.card-box + .card-box{margin-top:10px}
+.box-title{font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--ink-2);margin-bottom:11px}
+.preview{margin-top:12px;padding:14px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px}
+.preview__top{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2);margin-bottom:12px}
+.bubble{margin-left:auto;max-width:88%;width:fit-content;padding:11px 13px;background:var(--bubble);color:#fff;border-radius:16px 16px 4px 16px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.bubble__time{margin-top:5px;text-align:right;font-size:10.5px;color:var(--ink-2)}
+.counter{display:flex;justify-content:space-between;margin-top:7px;font-size:11.5px;color:var(--ink-2)}
+.counter.over{color:var(--minus)}
+.sent{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:12.5px}
+.sent__to{flex:none;color:var(--ink-2)}
+.sent__body{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note{margin-top:12px;padding:11px 13px;background:var(--surface-2);border-radius:12px;font-size:11.5px;line-height:1.6;color:var(--ink-2)}
+
+/* ── buttons / bar ──────────────────────── */
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border:0;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}
+.btn--primary{background:var(--ink);color:var(--ink-on)}
+.btn--ghost{background:var(--surface);border:1px solid var(--line)}
+.btn--danger{background:transparent;border:1px solid var(--line);color:var(--minus)}
+.btn:active{transform:scale(.99)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--bar);border-top:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.bar__in{max-width:560px;margin:0 auto}
+
+/* ── sheet ──────────────────────────────── */
+.sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.scrim{position:absolute;inset:0;background:rgba(9,13,17,.45);opacity:0;transition:opacity .25s}
+.panel{position:relative;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:10px 16px calc(18px + env(safe-area-inset-bottom));background:var(--surface);border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.is-open .scrim{opacity:1}
+.sheet.is-open .panel{transform:none}
+.grip{width:38px;height:4px;margin:2px auto 15px;border-radius:99px;background:var(--line)}
+.panel h2{margin:0 0 14px;font-size:19px;font-weight:700;letter-spacing:-.02em}
+.field{margin-bottom:12px}
+.field label{display:block;margin-bottom:6px;font-size:12px;font-weight:500;color:var(--ink-2)}
+.field-row{display:grid;grid-template-columns:1fr 108px;gap:9px}
+.seg{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+.seg button{padding:11px 4px;border:1px solid var(--line);border-radius:11px;background:var(--surface);font-size:14px;font-weight:500;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg button.is-on{border-color:var(--zone);background:var(--zone);color:#fff}
+.seg button.add{border-style:dashed;color:var(--ink-2)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:8px}
+.swatch{position:relative;display:block;height:44px;border:1px solid var(--line);border-radius:12px;cursor:pointer;color:#141a1f;font-size:15px;font-weight:700;line-height:44px;text-align:center}
+.swatch.is-on{outline:2px solid var(--ink);outline-offset:2px}
+.swatch--none{color:var(--ink-2);font-size:12px;font-weight:500}
+.swatch--pick{overflow:hidden;padding:0;background:conic-gradient(#f87171,#fbbf24,#a3e635,#34d399,#38bdf8,#818cf8,#e879f9,#f87171)}
+.swatch--pick input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;cursor:pointer}
+.plc{display:flex;align-items:center;gap:11px;padding:11px 12px;margin-bottom:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:13px}
+.plc__dot{flex:none;width:12px;height:12px;border-radius:4px;background:var(--zone)}
+.plc__name{flex:1;min-width:0;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plc__n{flex:none;font-size:12px;color:var(--ink-2)}
+
+/* ── toast ──────────────────────────────── */
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;gap:14px;max-width:88vw;padding:11px 16px;border-radius:12px;background:var(--ink);color:var(--ink-on);font-size:13.5px;font-weight:500;transform:translate(-50%,14px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.is-on{opacity:1;transform:translate(-50%,0)}
+.toast.has-btn{pointer-events:auto}
+.toast__btn{flex:none;border:0;padding:2px 0;background:transparent;color:inherit;font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
 </style>
 </head>
-
 <body>
+
 <div class="app">
-
-<header>
-<h1>🧊 냉장고 관리</h1>
-<div class="sub">HTML + data.json + localStorage</div>
-</header>
-
-<div class="tabs">
-<button id="fridgeTab" class="tab active">냉장고</button>
-<button id="todoTab" class="tab">할일</button>
-</div>
-
-<section id="fridgeSection">
-
-<div class="grid">
-<div class="stat">
-<small>상품 종류</small>
-<b id="foodCount">0</b>
-</div>
-
-<div class="stat">
-<small>전체 수량</small>
-<b id="foodQty">0</b>
-</div>
-</div>
-
-<div class="card" style="margin-top:11px">
-
-<div class="section-title">상품 추가</div>
-
-<div class="row">
-
-<div>
-<label>상품명</label>
-<input id="foodName" placeholder="예: 계란">
-</div>
-
-<div style="max-width:100px">
-<label>수량</label>
-<input id="foodQtyInput" type="number" min="1" value="1">
-</div>
-
-</div>
-
-<div style="margin-top:8px">
-
-<label>보관 위치</label>
-
-<select id="foodPlace">
-<option>냉장</option>
-<option>냉동</option>
-<option>실온</option>
-</select>
-
-</div>
-
-<button id="addFoodBtn" class="primary" style="width:100%;margin-top:10px">
-+ 상품 추가
-</button>
-
-</div>
-
-<div class="card">
-<input id="foodSearch" placeholder="🔍 상품 검색">
-</div>
-
-<div class="card">
-<div id="foodList"></div>
-</div>
-
-</section>
-
-
-<section id="todoSection" style="display:none">
-
-<div class="card">
-
-<div class="section-title">할일 추가</div>
-
-<div class="row">
-
-<input id="todoInput" placeholder="예: 계란 주문하기">
-
-<button id="addTodoBtn" class="primary">
-추가
-</button>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="section-title">할일 목록</div>
-
-<div id="todoList"></div>
-
-</div>
-
-<div class="row">
-
-<button id="resetColors" class="gray">
-전체 배경색 초기화
-</button>
-
-<button id="clearDone" class="danger">
-완료 삭제
-</button>
-
-</div>
-
-</section>
-
-
-<div class="notice">
-
-초기 데이터는 <b>data.json</b>에서 읽고,
-이후 변경사항은 이 브라우저의 <b>localStorage</b>에 저장합니다.
-
-</div>
-
-</div>
-
-
-<script>
-
-const STORAGE_KEY="fridge_todo_json_v2";
-
-let db={
-foods:[],
-todos:[]
-};
-
-
-const $=id=>document.getElementById(id);
-
-
-function uid(){
-
-return Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8);
-
-}
-
-
-function esc(s){
-
-return String(s).replace(/[&<>"']/g,m=>({
-
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#039;"
-
-}[m]));
-
-}
-
-
-async function init(){
-
-try{
-
-const saved=localStorage.getItem(STORAGE_KEY);
-
-if(saved){
-
-const x=JSON.parse(saved);
-
-db={
-foods:Array.isArray(x.foods)?x.foods:[],
-todos:Array.isArray(x.todos)?x.todos:[]
-};
-
-}else{
-
-const r=await fetch("data.json",{cache:"no-store"});
-
-if(!r.ok){
-
-throw new Error("data.json을 읽을 수 없습니다.");
-
-}
-
-const x=await r.json();
-
-db={
-foods:Array.isArray(x.foods)?x.foods:[],
-todos:Array.isArray(x.todos)?x.todos:[]
-};
-
-save();
-
-}
-
-}catch(e){
-
-console.error(e);
-
-alert("data.json을 불러오지 못했습니다.");
-
-db={
-foods:[],
-todos:[]
-};
-
-}
-
-renderFood();
-renderTodo();
-
-}
-
-
-function save(){
-
-localStorage.setItem(
-STORAGE_KEY,
-JSON.stringify(db)
-);
-
-}
-
-
-function renderFood(){
-
-const q=$("foodSearch").value.trim().toLowerCase();
-
-const list=db.foods.filter(
-x=>x.name.toLowerCase().includes(q)
-);
-
-$("foodCount").textContent=db.foods.length;
-
-$("foodQty").textContent=
-db.foods.reduce(
-(a,x)=>a+Number(x.qty||0),
-0
-);
-
-
-if(!list.length){
-
-$("foodList").innerHTML=
-'<div class="empty">등록된 상품이 없습니다.</div>';
-
-return;
-
-}
-
-
-$("foodList").innerHTML=list.map(x=>`
-
-<div class="item">
-
-<div class="head">
-
-<div>
-
-<div class="name">
-${esc(x.name)}
-</div>
-
-<div class="meta">
-${esc(x.place)} · ${x.qty}개
-</div>
-
-</div>
-
-
-<div class="qtybox">
-
-<button
-class="gray small"
-data-f="-1"
-data-id="${x.id}">
-−
-</button>
-
-<div class="qty">
-${x.qty}
-</div>
-
-<button
-class="gray small"
-data-f="1"
-data-id="${x.id}">
-+
-</button>
-
-</div>
-
-</div>
-
-
-<div style="margin-top:8px">
-
-<button
-class="gray small"
-data-edit="${x.id}">
-수정
-</button>
-
-<button
-class="danger small"
-data-del="${x.id}">
-삭제
-</button>
-
-</div>
-
-</div>
-
-`).join("");
-
-}
-
-
-function addFood(){
-
-const name=$("foodName").value.trim();
-
-const qty=
-Math.max(
-1,
-parseInt($("foodQtyInput").value)||1
-);
-
-const place=$("foodPlace").value;
-
-
-if(!name){
-
-alert("상품명을 입력하세요.");
-
-$("foodName").focus();
-
-return;
-
-}
-
-
-const old=db.foods.find(
-x=>x.name===name&&x.place===place
-);
-
-
-if(old){
-
-old.qty=Number(old.qty)+qty;
-
-}else{
-
-db.foods.unshift({
-
-id:uid(),
-
-name:name,
-
-qty:qty,
-
-place:place
-
-});
-
-}
-
-
-save();
-
-$("foodName").value="";
-
-$("foodQtyInput").value=1;
-
-renderFood();
-
-}
-
-
-function changeFood(id,d){
-
-const x=db.foods.find(
-v=>v.id===id
-);
-
-if(!x)return;
-
-x.qty=Number(x.qty)+d;
-
-if(x.qty<=0){
-
-db.foods=db.foods.filter(
-v=>v.id!==id
-);
-
-}
-
-save();
-
-renderFood();
-
-}
-
-
-function editFood(id){
-
-const x=db.foods.find(
-v=>v.id===id
-);
-
-if(!x)return;
-
-const n=prompt(
-"상품명",
-x.name
-);
-
-if(n===null||!n.trim())return;
-
-const p=prompt(
-"보관 위치: 냉장 / 냉동 / 실온",
-x.place
-);
-
-if(p===null)return;
-
-x.name=n.trim();
-
-if(
-["냉장","냉동","실온"].includes(
-p.trim()
-)
-){
-
-x.place=p.trim();
-
-}
-
-save();
-
-renderFood();
-
-}
-
-
-function deleteFood(id){
-
-if(!confirm("상품을 삭제할까요?"))
-return;
-
-db.foods=db.foods.filter(
-v=>v.id!==id
-);
-
-save();
-
-renderFood();
-
-}
-
-
-function renderTodo(){
-
-if(!db.todos.length){
-
-$("todoList").innerHTML=
-'<div class="empty">할일이 없습니다.</div>';
-
-return;
-
-}
-
-
-$("todoList").innerHTML=db.todos.map(x=>`
-
-<div
-class="todo ${x.done?"done":""}"
-style="${esc(x.bg||"")}"
->
-
-<button
-class="check"
-data-t="toggle"
-data-id="${x.id}">
-${x.done?"✓":""}
-</button>
-
-<div class="text">
-${esc(x.text)}
-</div>
-
-<div class="actions">
-
-<button
-class="gray small"
-data-t="color"
-data-id="${x.id}">
-색
-</button>
-
-<button
-class="gray small"
-data-t="edit"
-data-id="${x.id}">
-수정
-</button>
-
-<button
-class="danger small"
-data-t="del"
-data-id="${x.id}">
-삭제
-</button>
-
-</div>
-
-</div>
-
-`).join("");
-
-}
-
-
-function addTodo(){
-
-const text=$("todoInput").value.trim();
-
-if(!text){
-
-alert("할일을 입력하세요.");
-
-return;
-
-}
-
-
-db.todos.push({
-
-id:uid(),
-
-text:text,
-
-done:false,
-
-bg:""
-
-});
-
-
-save();
-
-$("todoInput").value="";
-
-renderTodo();
-
-}
-
-
-function toggleTodo(id){
-
-const x=db.todos.find(
-v=>v.id===id
-);
-
-if(x){
-
-x.done=!x.done;
-
-save();
-
-renderTodo();
-
-}
-
-}
-
-
-function editTodo(id){
-
-const x=db.todos.find(
-v=>v.id===id
-);
-
-if(!x)return;
-
-const t=prompt(
-"할일 수정",
-x.text
-);
-
-if(t&&t.trim()){
-
-x.text=t.trim();
-
-save();
-
-renderTodo();
-
-}
-
-}
-
-
-function deleteTodo(id){
-
-if(!confirm("삭제할까요?"))
-return;
-
-db.todos=db.todos.filter(
-v=>v.id!==id
-);
-
-save();
-
-renderTodo();
-
-}
-
-
-function colorTodo(id){
-
-const x=db.todos.find(
-v=>v.id===id
-);
-
-if(!x)return;
-
-const colors=[
-
-"",
-"background:#fff2cc",
-"background:#dff3ff",
-"background:#e5f6df",
-"background:#f2e5ff",
-"background:#ffe3e3"
-
-];
-
-const i=Math.max(
-0,
-colors.indexOf(x.bg||"")
-);
-
-x.bg=
-colors[
-(i+1)%colors.length
-];
-
-save();
-
-renderTodo();
-
-}
-
-
-function resetColors(){
-
-db.todos.forEach(
-x=>x.bg=""
-);
-
-save();
-
-renderTodo();
-
-}
-
-
-function clearDone(){
-
-db.todos=
-db.todos.filter(
-x=>!x.done
-);
-
-save();
-
-renderTodo();
-
-}
-
-
-$("fridgeTab").onclick=()=>{
-
-$("fridgeSection").style.display="block";
-
-$("todoSection").style.display="none";
-
-$("fridgeTab").classList.add("active");
-
-$("todoTab").classList.remove("active");
-
-};
-
-
-$("todoTab").onclick=()=>{
-
-$("fridgeSection").style.display="none";
-
-$("todoSection").style.display="block";
-
-$("todoTab").classList.add("active");
-
-$("fridgeTab").classList.remove("active");
-
-};
-
-
-$("addFoodBtn").onclick=addFood;
-
-$("addTodoBtn").onclick=addTodo;
-
-$("foodSearch").oninput=renderFood;
-
-$("resetColors").onclick=resetColors;
-
-$("clearDone").onclick=clearDone;
-
-
-$("foodName").onkeydown=e=>{
-
-if(e.key==="Enter")
-addFood();
-
-};
-
-
-$("todoInput").onkeydown=e=>{
-
-if(e.key==="Enter")
-addTodo();
-
-};
-
-
-$("foodList").onclick=e=>{
-
-const b=e.target.closest("button");
-
-if(!b)return;
-
-const id=b.dataset.id;
-
-if(b.dataset.f)
-changeFood(id,Number(b.dataset.f));
-
-else if(b.dataset.edit)
-editFood(b.dataset.edit);
-
-else if(b.dataset.del)
-deleteFood(b.dataset.del);
-
-};
-
-
-$("todoList").onclick=e=>{
-
-const b=e.target.closest("button");
-
-if(!b)return;
-
-const id=b.dataset.id;
-
-switch(b.dataset.t){
-
-case"toggle":
-toggleTodo(id);
-break;
-
-case"color":
-colorTodo(id);
-break;
-
-case"edit":
-editTodo(id);
-break;
-
-case"del":
-deleteTodo(id);
-break;
-
-}
-
-};
-
-
-init();
-
-</script>
-
-</body>
-</html>
+  <header>
+    <div class="eyebrow mono" id="today"></div>
+    <h1>냉장고 <span>재고</span></h1>
+    <div class="stats">
+      <button class="stat" data-jump="all">
+        <span class="stat__k">상품 종류</span>
+        <span class="stat__v mono" id="sKinds">0<i>종</i></span>
+      </button>
+      <button class="stat" data-jump="all">
+        <span class="stat__k">전체 수량</span>
+        <span class="stat__v mono" id="sQty">0<i>개</i></span>
+      </button>
+      <button class="stat stat--alert" data-jump="low">
+        <span class="stat__k">부족 · 품절</span>
+        <span class="stat__v mono" id="sLow">0<i>종</i></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <span class="thumb" id="thumb"></span>
+    <button class="tab is-on" role="tab" data-tab="fridge">냉장고</button>
+    <button class="tab" role="tab" data-tab="todo">할일</button>
+    <button class="tab" role="tab" data-tab="sms">문자</button>
+  </div>
+
+  <!-- 냉장고 -->
+  <section id="viewFridge">
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
+        
