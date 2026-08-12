@@ -41,7 +41,7 @@ body{
   overscroll-behavior-y:none;
 }
 .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
-button{font:inherit;color:inherit}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;appearance:none}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
@@ -94,7 +94,7 @@ textarea{resize:vertical;line-height:1.55}
 .hint--plus{color:var(--plus)}
 .hint--minus{color:var(--minus)}
 .card{position:relative;display:flex;align-items:center;gap:8px;padding:13px 10px 13px 15px;background:var(--surface);border-left:3px solid var(--zone,var(--line));touch-action:pan-y;will-change:transform;user-select:none;-webkit-user-select:none}
-.card .more{width:30px;height:34px;background:transparent;font-size:17px;letter-spacing:1px}
+.card .more{width:30px;height:34px;border:0;background:transparent;font-size:17px;letter-spacing:1px}
 .card .more:active{background:var(--surface-2)}
 .main{flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;cursor:pointer}
 .name{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
