@@ -97,6 +97,7 @@ textarea{resize:vertical;line-height:1.55}
 .main{flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;cursor:pointer}
 .name{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .meta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:12px;color:var(--ink-2)}
+.meta .base{opacity:.72}
 .tag{padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:600;letter-spacing:.01em}
 .tag--low{background:var(--minus-soft);color:var(--minus)}
 .tag--out{background:var(--minus);color:#fff}
@@ -160,6 +161,7 @@ textarea{resize:vertical;line-height:1.55}
 .field{margin-bottom:12px}
 .field label{display:block;margin-bottom:6px;font-size:12px;font-weight:500;color:var(--ink-2)}
 .field-row{display:grid;grid-template-columns:1fr 108px;gap:9px}
+.hintline{margin:-2px 0 14px;font-size:11.5px;line-height:1.5;color:var(--ink-2)}
 .seg{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
 .seg button{padding:11px 4px;border:1px solid var(--line);border-radius:11px;background:var(--surface);font-size:14px;font-weight:500;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .seg button.is-on{border-color:var(--zone);background:var(--zone);color:#fff}
@@ -198,11 +200,11 @@ textarea{resize:vertical;line-height:1.55}
         <span class="stat__v mono" id="sKinds">0<i>종</i></span>
       </button>
       <button class="stat" data-jump="all">
-        <span class="stat__k">전체 수량</span>
-        <span class="stat__v mono" id="sQty">0<i>개</i></span>
+        <span class="stat__k">여유</span>
+        <span class="stat__v mono" id="sOk">0<i>종</i></span>
       </button>
       <button class="stat stat--alert" data-jump="low">
-        <span class="stat__k">부족 · 품절</span>
+        <span class="stat__k">안전재고 미만</span>
         <span class="stat__v mono" id="sLow">0<i>종</i></span>
       </button>
     </div>
@@ -243,9 +245,9 @@ textarea{resize:vertical;line-height:1.55}
       <div class="box-title">받는 사람</div>
       <div class="field-row">
         <input id="phone" type="tel" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel">
-        <input id="lowLimit" type="number" min="0" max="99" inputmode="numeric" aria-label="부족 기준 수량">
+        <input id="lowLimit" type="number" min="0" max="999" inputmode="numeric" aria-label="기본 안전재고 수량">
       </div>
-      <div class="counter"><span id="phoneHint">여러 명은 쉼표로 구분</span><span id="lowHint">부족 기준 2개 이하</span></div>
+      <div class="counter"><span id="phoneHint">여러 명은 쉼표로 구분</span><span id="lowHint">기본 안전재고 2</span></div>
     </div>
 
     <div class="card-box">
@@ -311,15 +313,17 @@ const DEFAULT_PLACES = [
   { name: "실온", color: "#b8862b" }
 ];
 const PLACE_COLORS = ["#2f86b4", "#5568d8", "#b8862b", "#0f8f83", "#cf4f46", "#8b5cf6", "#d9752b", "#4a7c3f", "#64748b", "#c2417f"];
+const UNITS = ["개", "병", "팩", "봉", "통", "장", "판", "줄", "인분", "g", "kg", "ml", "L"];
+const BIG_UNITS = { g: 50, ml: 50 };  /* 이런 단위는 ±1이 무의미해서 증감 폭을 키운다 */
 const COLORS = ["", "background:#fff4d6", "background:#ffe1e1", "background:#ffe6cc", "background:#e7f5da",
   "background:#d9f2ee", "background:#ddeefb", "background:#e6e2fb", "background:#fbdff1", "background:#ececee"];
 
 const DEFAULT_DATA = {
   foods: [
-    { id: "food001", name: "계란", qty: 10, place: "냉장" },
-    { id: "food002", name: "닭가슴살", qty: 5, place: "냉동" },
-    { id: "food003", name: "감자", qty: 6, place: "실온" },
-    { id: "food004", name: "우유", qty: 2, place: "냉장" }
+    { id: "food001", name: "계란", qty: 10, unit: "개", min: 6, place: "냉장" },
+    { id: "food002", name: "닭가슴살", qty: 5, unit: "팩", min: null, place: "냉동" },
+    { id: "food003", name: "감자", qty: 6, unit: "개", min: null, place: "실온" },
+    { id: "food004", name: "우유", qty: 2, unit: "병", min: 3, place: "냉장" }
   ],
   todos: [
     { id: "todo001", text: "계란 주문하기", done: false, bg: "" },
@@ -368,6 +372,8 @@ function normalize(x) {
   const foods = (Array.isArray(x.foods) ? x.foods : []).map(f => ({
     id: f.id || uid(), name: String(f.name || "이름 없음"),
     qty: Math.max(0, Number(f.qty) || 0),
+    unit: String(f.unit || "개").slice(0, 4) || "개",
+    min: (f.min === null || f.min === undefined || f.min === "") ? null : Math.max(0, Number(f.min) || 0),
     place: String(f.place || (out[0] && out[0].name) || "냉장")
   }));
   /* 목록에 없는 보관 위치가 데이터에 있으면 그대로 살려둔다 */
@@ -406,7 +412,7 @@ async function init() {
   $("today").textContent = `${d.getFullYear()}.${p2(d.getMonth() + 1)}.${p2(d.getDate())} ${"일월화수목금토"[d.getDay()]}요일`;
   $("phone").value = db.settings.phone;
   $("lowLimit").value = db.settings.low;
-  $("lowHint").textContent = `부족 기준 ${db.settings.low}개 이하`;
+  $("lowHint").textContent = `기본 안전재고 ${db.settings.low}`;
 
   if (!store.ok) {
     $("storeNote").hidden = false;
@@ -420,12 +426,19 @@ const p2 = n => String(n).padStart(2, "0");
 const save = () => store.set(KEY, JSON.stringify(db));
 
 /* ── 냉장고 ───────────────────────────── */
-const isLow = f => f.qty <= db.settings.low;
-const lowItems = () => db.foods.filter(isLow).sort((a, b) => a.qty - b.qty);
+const minOf = f => (f.min === null || f.min === undefined) ? db.settings.low : f.min;
+const isLow = f => f.qty <= minOf(f);
+const shortOf = f => Math.max(0, minOf(f) - f.qty);      /* 안전재고까지 모자란 양 */
+const amt = (n, f) => `${n}${f.unit}`;
+const stepOf = f => BIG_UNITS[f.unit] || 1;
+/* 단위가 제각각이라 부족량 절대값 대신 비율로 정렬한다 (500g과 2병은 비교 불가) */
+const shortRate = f => { const m = minOf(f); return m > 0 ? shortOf(f) / m : (f.qty === 0 ? 1 : 0); };
+const lowItems = () => db.foods.filter(isLow).sort((a, b) =>
+  (b.qty === 0) - (a.qty === 0) || shortRate(b) - shortRate(a) || a.name.localeCompare(b.name, "ko"));
 
 function stats() {
   $("sKinds").innerHTML = db.foods.length + "<i>종</i>";
-  $("sQty").innerHTML = db.foods.reduce((a, f) => a + f.qty, 0) + "<i>개</i>";
+  $("sOk").innerHTML = db.foods.filter(f => !isLow(f)).length + "<i>종</i>";
   $("sLow").innerHTML = lowItems().length + "<i>종</i>";
 }
 
@@ -452,26 +465,28 @@ function renderFood() {
     return;
   }
   $("foodList").innerHTML = list.map((f, i) => `
-    <article class="row${firstPaint ? " in" : ""}" data-id="${f.id}" style="--i:${i}">
+    <article class="row${firstPaint ? " in" : ""}" data-id="${f.id}" data-step="${stepOf(f)}" style="--i:${i}">
       <div class="track" aria-hidden="true">
-        <span class="hint hint--plus"><b data-d>+1</b>채움</span>
-        <span class="hint hint--minus">사용<b data-d>−1</b></span>
+        <span class="hint hint--plus"><b data-d>+${stepOf(f)}</b>채움</span>
+        <span class="hint hint--minus">사용<b data-d>−${stepOf(f)}</b></span>
       </div>
       <div class="card" style="--zone:${zoneOf(f.place)}">
         <button class="main" data-open="${f.id}" aria-label="${esc(f.name)} 수정 · 좌우 방향키로 수량 조절">
           <span class="name">${esc(f.name)}</span>
-          <span class="meta">${f.place}<span class="mono">${f.qty}개</span>${tagOf(f)}</span>
+          <span class="meta">${metaOf(f)}</span>
         </button>
         <div class="stepper">
-          <button data-step="-1" aria-label="${esc(f.name)} 1개 줄이기" ${f.qty === 0 ? "disabled" : ""}>−</button>
+          <button data-step="-1" aria-label="${esc(f.name)} 줄이기" ${f.qty === 0 ? "disabled" : ""}>−</button>
           <output class="qty mono">${f.qty}</output>
-          <button data-step="1" aria-label="${esc(f.name)} 1개 늘리기">+</button>
+          <button data-step="1" aria-label="${esc(f.name)} 늘리기">+</button>
         </div>
         <button class="icon more" data-open="${f.id}" aria-label="${esc(f.name)} 수정 · 삭제">⋯</button>
       </div>
     </article>`).join("");
 }
-const tagOf = f => f.qty === 0 ? '<span class="tag tag--out">품절</span>' : (isLow(f) ? '<span class="tag tag--low">부족</span>' : "");
+const metaOf = f => `${esc(f.place)}<span class="mono">${amt(f.qty, f)}</span><span class="mono base">기준 ${amt(minOf(f), f)}</span>${tagOf(f)}`;
+const tagOf = f => f.qty === 0 ? '<span class="tag tag--out">품절</span>'
+  : (isLow(f) ? `<span class="tag tag--low">${shortOf(f) > 0 ? amt(shortOf(f), f) + " 부족" : "기준선"}</span>` : "");
 
 /* 목록 전체를 다시 그리지 않고 한 줄만 갱신 — 스와이프 애니메이션이 끊기지 않도록 */
 function patchRow(id, dir) {
@@ -483,7 +498,7 @@ function patchRow(id, dir) {
   out.classList.remove("up", "down");
   void out.offsetWidth;
   if (dir) out.classList.add(dir > 0 ? "up" : "down");
-  row.querySelector(".meta").innerHTML = `${f.place}<span class="mono">${f.qty}개</span>${tagOf(f)}`;
+  row.querySelector(".meta").innerHTML = metaOf(f);
   row.querySelector('[data-step="-1"]').disabled = f.qty === 0;
 }
 
@@ -515,7 +530,7 @@ function rubber(dx) {
 function paint(row, dx, steps) {
   row.classList.toggle("dir-plus", dx > 0);
   row.classList.toggle("dir-minus", dx < 0);
-  const n = Math.max(1, steps);
+  const n = Math.max(1, steps) * Number(row.dataset.step || 1);
   row.querySelector(".hint--plus [data-d]").textContent = "+" + n;
   row.querySelector(".hint--minus [data-d]").textContent = "−" + n;
 }
@@ -555,23 +570,29 @@ function endDrag() {
   if (drag.on) card.dataset.skip = "1";
   drag = null;
   if (steps > 0) {
-    const d = Math.sign(dx) * steps;
     const f = db.foods.find(v => v.id === id);
-    const applied = f ? Math.max(0, f.qty + d) - f.qty : 0;
+    if (!f) return;
+    const d = Math.sign(dx) * steps * stepOf(f);
+    const applied = Math.max(0, f.qty + d) - f.qty;
     change(id, d);
-    if (applied) { buzz(14); toast(`${f.name} ${applied > 0 ? "+" : ""}${applied}개 → ${f.qty}개`); }
-    else toast(`${f ? f.name : "상품"}은 이미 0개입니다`);
+    if (applied) { buzz(14); toast(`${f.name} ${applied > 0 ? "+" : ""}${applied}${f.unit} → ${amt(f.qty, f)}`); }
+    else toast(`${f.name}은(는) 이미 0${f.unit}입니다`);
   }
 }
 window.addEventListener("pointerup", endDrag);
 window.addEventListener("pointercancel", endDrag);
+
+function stepBy(id, dir) {
+  const f = db.foods.find(v => v.id === id);
+  if (f) change(id, dir * stepOf(f));
+}
 
 $("foodList").addEventListener("click", e => {
   const card = e.target.closest(".card");
   if (card && card.dataset.skip) { delete card.dataset.skip; return; }
   const b = e.target.closest("button");
   if (!b) return;
-  if (b.dataset.step) change(b.closest(".row").dataset.id, Number(b.dataset.step));
+  if (b.dataset.step) stepBy(b.closest(".row").dataset.id, Number(b.dataset.step));
   else if (b.dataset.open) openFood(b.dataset.open);
 });
 
@@ -579,8 +600,8 @@ $("foodList").addEventListener("keydown", e => {
   const b = e.target.closest(".main");
   if (!b) return;
   const id = b.closest(".row").dataset.id;
-  if (e.key === "ArrowRight") { e.preventDefault(); change(id, 1); }
-  if (e.key === "ArrowLeft") { e.preventDefault(); change(id, -1); }
+  if (e.key === "ArrowRight") { e.preventDefault(); stepBy(id, 1); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); stepBy(id, -1); }
 });
 
 /* ── 할일 ─────────────────────────────── */
@@ -627,13 +648,21 @@ function buildMsg(kind) {
   const d = new Date(), day = `${p2(d.getMonth() + 1)}/${p2(d.getDate())}`;
   if (kind === "shop") {
     const items = lowItems();
-    if (!items.length) return `[냉장고 ${day}]\n부족한 상품이 없습니다.`;
-    return `[장보기 ${day}]\n` + items.map(f => `- ${f.name} ${f.qty}개`).join("\n");
+    if (!items.length) return `[냉장고 ${day}]\n안전재고 아래로 내려간 상품이 없습니다.`;
+    return `[장보기 ${day}]\n` + items.map(f => {
+      const need = shortOf(f);
+      if (need > 0) {
+        const state = f.qty === 0 ? "품절" : `현재 ${amt(f.qty, f)}`;
+        return `- ${f.name} ${amt(need, f)} 부족 (${state} / 기준 ${amt(minOf(f), f)})`;
+      }
+      return `- ${f.name} ${amt(f.qty, f)} (기준선)`;
+    }).join("\n");
   }
   if (kind === "stock") {
     if (!db.foods.length) return `[냉장고 ${day}]\n등록된 상품이 없습니다.`;
     return `[재고 ${day}]\n` + placeNames().filter(p => db.foods.some(f => f.place === p))
-      .map(p => `${p}: ` + db.foods.filter(f => f.place === p).map(f => `${f.name} ${f.qty}`).join(", ")).join("\n");
+      .map(p => `${p}: ` + db.foods.filter(f => f.place === p)
+        .map(f => `${f.name} ${amt(f.qty, f)}${isLow(f) ? "(부족)" : ""}`).join(", ")).join("\n");
   }
   if (kind === "todo") {
     const t = db.todos.filter(x => !x.done);
@@ -677,7 +706,7 @@ $("tpl").addEventListener("click", e => {
 $("phone").addEventListener("input", () => { db.settings.phone = $("phone").value.trim(); save(); updatePreview(); });
 $("lowLimit").addEventListener("input", () => {
   db.settings.low = Math.max(0, Number($("lowLimit").value) || 0);
-  $("lowHint").textContent = `부족 기준 ${db.settings.low}개 이하`;
+  $("lowHint").textContent = `기본 안전재고 ${db.settings.low}`;
   save(); renderFood(); if (tpl !== "custom") refillMsg();
 });
 
@@ -935,9 +964,21 @@ function openFood(id) {
   let place = f ? f.place : (placeNames()[0] || "냉장");
   openSheet(f ? "상품 수정" : "상품 추가", `
     <div class="field field-row">
-      <div><label for="fName">상품명</label><input id="fName" placeholder="예: 계란" value="${f ? esc(f.name) : ""}"></div>
+      <div><label for="fName">상품명</label><input id="fName" placeholder="예: 우유" value="${f ? esc(f.name) : ""}"></div>
       <div><label for="fQty">수량</label><input id="fQty" type="number" min="0" inputmode="numeric" value="${f ? f.qty : 1}"></div>
     </div>
+    <div class="field field-row">
+      <div>
+        <label for="fUnit">단위</label>
+        <input id="fUnit" maxlength="4" placeholder="개" value="${f ? esc(f.unit) : "개"}">
+      </div>
+      <div>
+        <label for="fMin">안전재고</label>
+        <input id="fMin" type="number" min="0" inputmode="numeric" placeholder="기본 ${db.settings.low}" value="${f && f.min !== null ? f.min : ""}">
+      </div>
+    </div>
+    <div class="chips" id="fUnits">${UNITS.map(u => `<button class="chip${(f ? f.unit : "개") === u ? " is-on" : ""}" data-u="${u}">${u}</button>`).join("")}</div>
+    <p class="hintline" id="fHint"></p>
     <div class="field">
       <label>보관 위치</label>
       <div class="seg" id="fPlace">${placeSeg(place)}</div>
@@ -945,6 +986,24 @@ function openFood(id) {
     <button class="btn btn--primary" id="fSave">${f ? "저장" : "추가"}</button>
     ${f ? '<button class="btn btn--danger" id="fDel" style="margin-top:8px">삭제</button>' : ""}
   `, () => {
+    const unitVal = () => ($("fUnit").value.trim() || "개");
+    const hint = () => {
+      const u = unitVal();
+      const m = $("fMin").value.trim() === "" ? db.settings.low : Math.max(0, Number($("fMin").value) || 0);
+      const step = BIG_UNITS[u] || 1;
+      $("fHint").textContent = `${m}${u} 이하로 떨어지면 부족으로 보고 장보기 문자에 넣습니다`
+        + (step > 1 ? ` · ± 버튼은 ${step}${u}씩 움직입니다` : "");
+      $("fUnits").querySelectorAll(".chip").forEach(c => c.classList.toggle("is-on", c.dataset.u === u));
+    };
+    hint();
+    $("fUnit").oninput = hint;
+    $("fMin").oninput = hint;
+    $("fUnits").onclick = e => {
+      const b = e.target.closest(".chip");
+      if (!b) return;
+      $("fUnit").value = b.dataset.u;
+      hint();
+    };
     $("fPlace").onclick = e => {
       const b = e.target.closest("button");
       if (!b) return;
@@ -965,12 +1024,15 @@ function openFood(id) {
     $("fSave").onclick = () => {
       const name = $("fName").value.trim();
       const qty = Math.max(0, parseInt($("fQty").value, 10) || 0);
+      const unit = unitVal();
+      const minRaw = $("fMin").value.trim();
+      const min = minRaw === "" ? null : Math.max(0, parseInt(minRaw, 10) || 0);
       if (!name) { $("fName").focus(); return toast("상품명을 입력하세요"); }
-      if (f) { f.name = name; f.qty = qty; f.place = place; }
+      if (f) { f.name = name; f.qty = qty; f.unit = unit; f.min = min; f.place = place; }
       else {
-        const same = db.foods.find(v => v.name === name && v.place === place);
+        const same = db.foods.find(v => v.name === name && v.place === place && v.unit === unit);
         if (same) same.qty += qty;
-        else db.foods.unshift({ id: uid(), name, qty, place });
+        else db.foods.unshift({ id: uid(), name, qty, unit, min, place });
       }
       save(); closeSheet(); renderFood(); if (tpl !== "custom") refillMsg();
       toast(f ? "저장했습니다" : `${name}을(를) 추가했습니다`);

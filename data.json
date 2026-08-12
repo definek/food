@@ -1,9 +1,10 @@
 {
   "foods": [
-    { "id": "food001", "name": "계란", "qty": 10, "place": "냉장" },
-    { "id": "food002", "name": "닭가슴살", "qty": 5, "place": "냉동" },
-    { "id": "food003", "name": "감자", "qty": 6, "place": "실온" },
-    { "id": "food004", "name": "우유", "qty": 2, "place": "냉장" }
+    { "id": "food001", "name": "계란", "qty": 10, "unit": "개", "min": 6, "place": "냉장" },
+    { "id": "food002", "name": "닭가슴살", "qty": 5, "unit": "팩", "min": null, "place": "냉동" },
+    { "id": "food003", "name": "감자", "qty": 6, "unit": "개", "min": null, "place": "실온" },
+    { "id": "food004", "name": "우유", "qty": 2, "unit": "병", "min": 3, "place": "냉장" },
+    { "id": "food005", "name": "돼지고기", "qty": 400, "unit": "g", "min": 500, "place": "냉동" }
   ],
   "todos": [
     { "id": "todo001", "text": "계란 주문하기", "done": false, "bg": "" },
