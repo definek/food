@@ -990,7 +990,9 @@ function placeSeg(current) {
 
 function openFood(id) {
   const f = id ? db.foods.find(v => v.id === id) : null;
-  let place = f ? f.place : (placeNames()[0] || "냉장");
+  /* 보관 위치를 골라 놓고 추가하면 그 위치로 시작한다 (filter는 all·low일 수도 있다) */
+  let place = f ? f.place
+    : (placeNames().includes(filter) ? filter : (placeNames()[0] || "냉장"));
   openSheet(f ? "상품 수정" : "상품 추가", `
     <div class="field field-row">
       <div><label for="fName">상품명</label><input id="fName" placeholder="예: 우유" value="${f ? esc(f.name) : ""}"></div>
