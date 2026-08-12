@@ -48,7 +48,9 @@ button{font:inherit;color:inherit}
 .app{max-width:560px;margin:0 auto;padding:20px 16px calc(104px + env(safe-area-inset-bottom))}
 
 /* ── header ─────────────────────────────── */
+.eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .eyebrow{font-size:11px;letter-spacing:.18em;color:var(--ink-2)}
+.gear{flex:none;width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink-2);font-size:14px;cursor:pointer}
 h1{margin:7px 0 0;font-size:31px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 h1 span{font-weight:300;color:var(--ink-2)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
@@ -139,7 +141,7 @@ textarea{resize:vertical;line-height:1.55}
 .note{margin-top:12px;padding:11px 13px;background:var(--surface-2);border-radius:12px;font-size:11.5px;line-height:1.6;color:var(--ink-2)}
 
 /* ── buttons / bar ──────────────────────── */
-.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border:0;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border:0;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none}
 .btn--primary{background:var(--ink);color:var(--ink-on)}
 .btn--ghost{background:var(--surface);border:1px solid var(--line)}
 .btn--danger{background:transparent;border:1px solid var(--line);color:var(--minus)}
@@ -190,18 +192,21 @@ textarea{resize:vertical;line-height:1.55}
 
 <div class="app">
   <header>
-    <div class="eyebrow mono" id="today"></div>
+    <div class="eyebrow-row">
+      <div class="eyebrow mono" id="today"></div>
+      <button class="gear" id="btnSettings" aria-label="설정" type="button">⚙</button>
+    </div>
     <h1>냉장고 <span>재고</span></h1>
     <div class="stats">
-      <button class="stat" data-jump="all">
+      <button class="stat" data-jump="all" type="button">
         <span class="stat__k">상품 종류</span>
         <span class="stat__v mono" id="sKinds">0<i>종</i></span>
       </button>
-      <button class="stat" data-jump="all">
+      <button class="stat" data-jump="all" type="button">
         <span class="stat__k">전체 수량</span>
         <span class="stat__v mono" id="sQty">0<i>개</i></span>
       </button>
-      <button class="stat stat--alert" data-jump="low">
+      <button class="stat stat--alert" data-jump="low" type="button">
         <span class="stat__k">부족 · 품절</span>
         <span class="stat__v mono" id="sLow">0<i>종</i></span>
       </button>
@@ -210,9 +215,9 @@ textarea{resize:vertical;line-height:1.55}
 
   <div class="tabs" role="tablist">
     <span class="thumb" id="thumb"></span>
-    <button class="tab is-on" role="tab" data-tab="fridge">냉장고</button>
-    <button class="tab" role="tab" data-tab="todo">할일</button>
-    <button class="tab" role="tab" data-tab="sms">문자</button>
+    <button class="tab is-on" role="tab" data-tab="fridge" type="button">냉장고</button>
+    <button class="tab" role="tab" data-tab="todo" type="button">할일</button>
+    <button class="tab" role="tab" data-tab="sms" type="button">문자</button>
   </div>
 
   <!-- 냉장고 -->
@@ -220,4 +225,791 @@ textarea{resize:vertical;line-height:1.55}
     <div class="search">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
-        
+        <path d="M11 11L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <input id="foodSearch" placeholder="상품 검색" autocomplete="off">
+    </div>
+    <div class="chips" id="chips" role="tablist"></div>
+    <div class="list" id="foodList"></div>
+  </section>
+
+  <!-- 할일 -->
+  <section id="viewTodo" hidden>
+    <div class="list" id="todoList"></div>
+  </section>
+
+  <!-- 문자 -->
+  <section id="viewSms" hidden>
+    <div class="card-box">
+      <div class="box-title">받는 사람</div>
+      <input id="smsPhone" placeholder="010-0000-0000" inputmode="tel" autocomplete="off">
+    </div>
+
+    <div class="card-box">
+      <div class="box-title">보낼 내용</div>
+      <textarea id="smsBody" rows="6" placeholder="자동 생성 버튼을 눌러보세요"></textarea>
+      <div class="counter" id="smsCounter"><span>0자</span><span></span></div>
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="btnAutoMsg" type="button">부족재고 자동 생성</button>
+        <a class="btn btn--primary" id="btnSendSms" href="sms:">문자 보내기</a>
+      </div>
+      <div class="preview">
+        <div class="preview__top"><span id="smsPreviewTo">받는 사람 미입력</span><span id="smsPreviewNow"></span></div>
+        <div class="bubble" id="smsBubble">미리보기가 여기에 표시됩니다.</div>
+        <div class="bubble__time" id="smsBubbleTime"></div>
+      </div>
+    </div>
+
+    <div class="card-box" id="sentBox">
+      <div class="box-title">보낸 문자 기록</div>
+      <div id="sentList"></div>
+    </div>
+
+    <div class="note">문자 보내기를 누르면 기기의 문자 앱이 열립니다. 실제 발송은 문자 앱에서 이뤄지며, 이 기록은 이 브라우저에만 저장됩니다.</div>
+  </section>
+</div>
+
+<div class="bar">
+  <div class="bar__in" id="barFridge">
+    <button class="btn btn--primary" id="btnAddFood" type="button">+ 상품 추가</button>
+  </div>
+  <div class="bar__in" id="barTodo" hidden>
+    <button class="btn btn--primary" id="btnAddTodo" type="button">+ 할일 추가</button>
+  </div>
+  <div class="bar__in" id="barSms" hidden>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn--ghost" id="btnClearSent" type="button">기록 삭제</button>
+      <button class="btn btn--primary" id="btnGoSms2" type="button">문자 작성</button>
+    </div>
+  </div>
+</div>
+
+<!-- 상품 추가/수정 시트 -->
+<div class="sheet" id="sheetFood" hidden>
+  <div class="scrim" data-close></div>
+  <div class="panel">
+    <div class="grip"></div>
+    <h2 id="foodSheetTitle">상품 추가</h2>
+    <div class="field">
+      <label for="fName">상품명</label>
+      <input id="fName" placeholder="예: 계란">
+    </div>
+    <div class="field">
+      <label>수량 / 단위</label>
+      <div class="field-row">
+        <input id="fQty" type="number" inputmode="numeric" min="0" value="1">
+        <input id="fUnit" list="unitList" placeholder="개">
+        <datalist id="unitList"></datalist>
+      </div>
+    </div>
+    <div class="field">
+      <label for="fSafety">안전재고 수량 <span style="font-weight:400">(이 수량 이하이면 부족으로 표시)</span></label>
+      <input id="fSafety" type="number" inputmode="numeric" min="0" value="2">
+    </div>
+    <div class="field">
+      <label>보관 위치</label>
+      <div class="seg" id="fPlaceSeg"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn--danger" id="btnDeleteFood" type="button" hidden>삭제</button>
+      <button class="btn btn--primary" id="btnSaveFood" type="button">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 보관 위치 추가 시트 -->
+<div class="sheet" id="sheetPlace" hidden>
+  <div class="scrim" data-close></div>
+  <div class="panel">
+    <div class="grip"></div>
+    <h2>보관 위치 추가</h2>
+    <div class="field">
+      <label for="pName">위치 이름</label>
+      <input id="pName" placeholder="예: 팬트리">
+    </div>
+    <div class="field">
+      <label>색상</label>
+      <div class="swatches" id="pSwatches"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn--ghost" data-close type="button">취소</button>
+      <button class="btn btn--primary" id="btnSavePlace" type="button">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 할일 추가/수정 시트 -->
+<div class="sheet" id="sheetTodo" hidden>
+  <div class="scrim" data-close></div>
+  <div class="panel">
+    <div class="grip"></div>
+    <h2 id="todoSheetTitle">할일 추가</h2>
+    <div class="field">
+      <label for="tText">내용</label>
+      <input id="tText" placeholder="예: 계란 주문하기">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn--danger" id="btnDeleteTodo" type="button" hidden>삭제</button>
+      <button class="btn btn--primary" id="btnSaveTodo" type="button">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 설정 시트 -->
+<div class="sheet" id="sheetSettings" hidden>
+  <div class="scrim" data-close></div>
+  <div class="panel">
+    <div class="grip"></div>
+    <h2>설정</h2>
+    <div class="field">
+      <label for="sPhone">문자 받는 사람 번호</label>
+      <input id="sPhone" placeholder="010-0000-0000" inputmode="tel">
+    </div>
+    <div class="field">
+      <label for="sLow">기본 안전재고 수량 <span style="font-weight:400">(상품별 설정이 없을 때 사용)</span></label>
+      <input id="sLow" type="number" inputmode="numeric" min="0" value="2">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn--ghost" id="btnCloseSettings" type="button">닫기</button>
+      <button class="btn btn--primary" id="btnSaveSettings" type="button">저장</button>
+    </div>
+
+    <div class="box-title" style="margin-top:18px">데이터 백업</div>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn--ghost" id="btnExport" type="button">백업 내보내기</button>
+      <button class="btn btn--ghost" id="btnImport" type="button">백업 불러오기</button>
+    </div>
+    <input type="file" id="fileImport" accept="application/json" hidden>
+    <div class="note">내보내기를 누르면 현재 데이터가 JSON 파일로 저장됩니다. 불러오기로 그 파일을 선택하면 현재 데이터를 덮어씁니다.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+(function(){
+"use strict";
+
+var STORAGE_KEY = "food_app_v2";
+var TAB_ORDER = ["fridge","todo","sms"];
+var SMS_LIMIT = 80;
+
+var db = { foods: [], todos: [], settings: { phone:"", low:2, places:[], units:[] }, sent: [] };
+var state = { tab:"fridge", filter:"__all__", editFoodId:null, editTodoId:null };
+
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, function(m){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+  });
+}
+function uid(){ return Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8); }
+
+function safetyOf(f){
+  var v = Number(f.safety);
+  if(!isNaN(v) && f.safety!==""&&f.safety!=null) return v;
+  return Number(db.settings.low)||0;
+}
+function isOut(f){ return Number(f.qty)<=0; }
+function isLow(f){ return Number(f.qty) <= safetyOf(f); }
+
+/* ── persistence ─────────────────────────── */
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+
+function normalize(x){
+  var out = {
+    foods: Array.isArray(x.foods)?x.foods:[],
+    todos: Array.isArray(x.todos)?x.todos:[],
+    settings: Object.assign({phone:"",low:2,places:[],units:[]}, x.settings||{}),
+    sent: Array.isArray(x.sent)?x.sent:[]
+  };
+  out.foods = out.foods.map(function(f){
+    return {
+      id: f.id || uid(),
+      name: f.name || "",
+      qty: Number(f.qty)||0,
+      place: f.place || (out.settings.places[0]&&out.settings.places[0].name) || "",
+      unit: f.unit || "개",
+      safety: (f.safety===""||f.safety==null) ? "" : Number(f.safety)
+    };
+  });
+  out.todos = out.todos.map(function(t){
+    return { id:t.id||uid(), text:t.text||"", done:!!t.done, bg:t.bg||"" };
+  });
+  if(!out.settings.places.length){
+    out.settings.places = [{name:"냉장",color:"#2f86b4"},{name:"냉동",color:"#5568d8"},{name:"실온",color:"#b8862b"}];
+  }
+  if(!out.settings.units || !out.settings.units.length){
+    out.settings.units = ["개","봉지","팩","병","통","판","kg","g","L","ml"];
+  }
+  return out;
+}
+
+async function init(){
+  var saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    try{ db = normalize(JSON.parse(saved)); }
+    catch(e){ console.error(e); }
+  }else{
+    try{
+      var r = await fetch("data.json",{cache:"no-store"});
+      if(!r.ok) throw new Error("data.json load failed");
+      db = normalize(await r.json());
+      save();
+    }catch(e){
+      console.error(e);
+      db = normalize({});
+      save();
+    }
+  }
+  setToday();
+  renderAll();
+  bind();
+}
+
+function setToday(){
+  try{
+    var d = new Date();
+    $("today").textContent = d.toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
+  }catch(e){ $("today").textContent = ""; }
+}
+
+/* ── toast ─────────────────────────────── */
+var toastTimer=null;
+function toast(msg){
+  var el=$("toast");
+  $("toastMsg").textContent = msg;
+  el.classList.add("is-on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove("is-on"); }, 2200);
+}
+
+/* ── tabs ──────────────────────────────── */
+function setTab(tab){
+  state.tab = tab;
+  var idx = TAB_ORDER.indexOf(tab);
+  $("thumb").style.transform = "translateX(calc(" + idx + " * 100%))";
+  document.querySelectorAll(".tab").forEach(function(b){
+    b.classList.toggle("is-on", b.dataset.tab===tab);
+  });
+  $("viewFridge").hidden = tab!=="fridge";
+  $("viewTodo").hidden = tab!=="todo";
+  $("viewSms").hidden = tab!=="sms";
+  $("barFridge").hidden = tab!=="fridge";
+  $("barTodo").hidden = tab!=="todo";
+  $("barSms").hidden = tab!=="sms";
+  if(tab==="sms") renderSmsHeader();
+}
+
+/* ── render: fridge ────────────────────── */
+function renderChips(){
+  var chips = ['<button class="chip'+(state.filter==="__all__"?" is-on":"")+'" data-filter="__all__" type="button">전체</button>'];
+  chips.push('<button class="chip'+(state.filter==="__low__"?" is-on":"")+'" data-filter="__low__" type="button"><span class="dot" style="--zone:var(--minus)"></span>부족·품절</button>');
+  db.settings.places.forEach(function(p){
+    chips.push('<button class="chip'+(state.filter===p.name?" is-on":"")+'" data-filter="'+esc(p.name)+'" style="--zone:'+esc(p.color)+'" type="button"><span class="dot"></span>'+esc(p.name)+'</button>');
+  });
+  $("chips").innerHTML = chips.join("");
+}
+
+function placeColor(name){
+  var p = db.settings.places.find(function(x){ return x.name===name; });
+  return p ? p.color : "#8a97a3";
+}
+
+function renderFoodList(){
+  var q = $("foodSearch").value.trim().toLowerCase();
+  var list = db.foods.filter(function(f){
+    if(q && f.name.toLowerCase().indexOf(q)===-1) return false;
+    if(state.filter==="__all__") return true;
+    if(state.filter==="__low__") return isLow(f);
+    return f.place===state.filter;
+  });
+
+  if(!list.length){
+    $("foodList").innerHTML = '<div class="empty">표시할 상품이 없습니다.<br>우측 하단 버튼으로 상품을 추가해보세요.</div>';
+    return;
+  }
+
+  $("foodList").innerHTML = list.map(function(f,i){
+    var tag = isOut(f) ? '<span class="tag tag--out">품절</span>' : (isLow(f) ? '<span class="tag tag--low">부족</span>' : "");
+    return '<div class="row in" style="--i:'+i+'" data-id="'+f.id+'">'+
+      '<div class="track">'+
+        '<div class="hint hint--minus"><b>−</b>수량 감소</div>'+
+        '<div class="hint hint--plus">수량 증가<b>+</b></div>'+
+      '</div>'+
+      '<div class="card" style="--zone:'+esc(placeColor(f.place))+'" data-drag data-id="'+f.id+'">'+
+        '<button class="main" data-edit="'+f.id+'" type="button">'+
+          '<span class="name">'+esc(f.name)+'</span>'+
+          '<span class="meta">'+esc(f.place)+' · '+f.qty+esc(f.unit)+' · 안전재고 '+safetyOf(f)+esc(f.unit)+'↓ '+tag+'</span>'+
+        '</button>'+
+        '<div class="stepper">'+
+          '<button data-step="-1" data-id="'+f.id+'" type="button" aria-label="감소">−</button>'+
+          '<span class="qty mono" id="qty-'+f.id+'">'+f.qty+'</span>'+
+          '<button data-step="1" data-id="'+f.id+'" type="button" aria-label="증가">+</button>'+
+        '</div>'+
+        '<button class="more" data-del="'+f.id+'" type="button" aria-label="삭제">⋯</button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+
+function renderStats(){
+  $("sKinds").innerHTML = db.foods.length+"<i>종</i>";
+  var totalQty = db.foods.reduce(function(a,f){ return a+Number(f.qty||0); },0);
+  $("sQty").innerHTML = totalQty+"<i>개</i>";
+  var lowCount = db.foods.filter(isLow).length;
+  $("sLow").innerHTML = lowCount+"<i>종</i>";
+}
+
+function bumpQty(id,dir){
+  var el = $("qty-"+id);
+  if(!el) return;
+  el.classList.remove("up","down");
+  void el.offsetWidth;
+  el.classList.add(dir>0?"up":"down");
+}
+
+function changeQty(id, delta){
+  var f = db.foods.find(function(x){ return x.id===id; });
+  if(!f) return;
+  f.qty = Math.max(0, Number(f.qty)+delta);
+  save();
+  bumpQty(id, delta);
+  renderFoodList();
+  renderStats();
+}
+
+/* ── food sheet ────────────────────────── */
+function openSheet(id){ var s=$(id); s.hidden=false; requestAnimationFrame(function(){ s.classList.add("is-open"); }); }
+function closeSheet(id){ var s=$(id); s.classList.remove("is-open"); setTimeout(function(){ s.hidden=true; },300); }
+
+function fillUnitList(){
+  var units = db.settings.units.slice();
+  db.foods.forEach(function(f){ if(f.unit && units.indexOf(f.unit)===-1) units.push(f.unit); });
+  $("unitList").innerHTML = units.map(function(u){ return '<option value="'+esc(u)+'">'; }).join("");
+}
+
+function renderPlaceSeg(selected){
+  var html = db.settings.places.map(function(p){
+    return '<button type="button" class="'+(p.name===selected?"is-on":"")+'" style="--zone:'+esc(p.color)+'" data-place="'+esc(p.name)+'">'+esc(p.name)+'</button>';
+  }).join("");
+  html += '<button type="button" class="add" data-place-add>+ 추가</button>';
+  $("fPlaceSeg").innerHTML = html;
+}
+
+function openFoodSheet(id){
+  state.editFoodId = id || null;
+  fillUnitList();
+  if(id){
+    var f = db.foods.find(function(x){ return x.id===id; });
+    if(!f) return;
+    $("foodSheetTitle").textContent = "상품 수정";
+    $("fName").value = f.name;
+    $("fQty").value = f.qty;
+    $("fUnit").value = f.unit;
+    $("fSafety").value = (f.safety===""||f.safety==null) ? "" : f.safety;
+    renderPlaceSeg(f.place);
+    $("btnDeleteFood").hidden = false;
+  }else{
+    $("foodSheetTitle").textContent = "상품 추가";
+    $("fName").value = "";
+    $("fQty").value = 1;
+    $("fUnit").value = "개";
+    $("fSafety").value = db.settings.low;
+    renderPlaceSeg(db.settings.places[0] && db.settings.places[0].name);
+    $("btnDeleteFood").hidden = true;
+  }
+  openSheet("sheetFood");
+}
+
+function saveFoodFromSheet(){
+  var name = $("fName").value.trim();
+  if(!name){ toast("상품명을 입력하세요"); $("fName").focus(); return; }
+  var qty = Math.max(0, parseInt($("fQty").value,10)||0);
+  var unit = $("fUnit").value.trim() || "개";
+  var safetyRaw = $("fSafety").value;
+  var safety = safetyRaw==="" ? "" : Math.max(0, parseInt(safetyRaw,10)||0);
+  var placeBtn = $("fPlaceSeg").querySelector(".is-on");
+  var place = placeBtn ? placeBtn.dataset.place : (db.settings.places[0]&&db.settings.places[0].name)||"";
+
+  if(state.editFoodId){
+    var f = db.foods.find(function(x){ return x.id===state.editFoodId; });
+    if(f){ f.name=name; f.qty=qty; f.unit=unit; f.safety=safety; f.place=place; }
+  }else{
+    db.foods.unshift({ id:uid(), name:name, qty:qty, place:place, unit:unit, safety:safety });
+  }
+  save();
+  closeSheet("sheetFood");
+  renderAll();
+  toast("저장했습니다");
+}
+
+function deleteFood(id){
+  if(!confirm("이 상품을 삭제할까요?")) return;
+  db.foods = db.foods.filter(function(x){ return x.id!==id; });
+  save();
+  renderAll();
+  toast("삭제했습니다");
+}
+
+/* ── place sheet ───────────────────────── */
+var pickedColor = "#2f86b4";
+function openPlaceSheet(){
+  $("pName").value = "";
+  pickedColor = "#2f86b4";
+  var swatchColors = ["#2f86b4","#5568d8","#b8862b","#2f9e6f","#c0553f","#7a5bd1","#4d8f3f","#c04f8e"];
+  $("pSwatches").innerHTML = swatchColors.map(function(c,i){
+    return '<button type="button" class="swatch'+(i===0?" is-on":"")+'" style="background:'+c+'" data-color="'+c+'"></button>';
+  }).join("");
+  openSheet("sheetPlace");
+}
+function savePlace(){
+  var name = $("pName").value.trim();
+  if(!name){ toast("위치 이름을 입력하세요"); return; }
+  if(db.settings.places.some(function(p){ return p.name===name; })){ toast("이미 있는 위치입니다"); return; }
+  db.settings.places.push({ name:name, color:pickedColor });
+  save();
+  closeSheet("sheetPlace");
+  renderPlaceSeg(name);
+  renderChips();
+  toast("위치를 추가했습니다");
+}
+
+/* ── todo ──────────────────────────────── */
+var TODO_COLORS = ["","background:#fff2cc","background:#dff3ff","background:#e5f6df","background:#f2e5ff","background:#ffe3e3"];
+
+function renderTodoList(){
+  if(!db.todos.length){
+    $("todoList").innerHTML = '<div class="empty">할일이 없습니다.</div>';
+    return;
+  }
+  $("todoList").innerHTML = db.todos.map(function(t){
+    return '<div class="todo'+(t.done?" done":"")+(t.bg?" has-bg":"")+'" style="'+esc(t.bg||"")+'" data-id="'+t.id+'">'+
+      '<button class="check" data-toggle="'+t.id+'" type="button">'+(t.done?"✓":"")+'</button>'+
+      '<button class="text" data-edit-todo="'+t.id+'" type="button">'+esc(t.text)+'</button>'+
+      '<button class="icon" data-color="'+t.id+'" type="button" aria-label="색상">🎨</button>'+
+      '<button class="icon" data-del-todo="'+t.id+'" type="button" aria-label="삭제">🗑</button>'+
+    '</div>';
+  }).join("");
+}
+
+function openTodoSheet(id){
+  state.editTodoId = id||null;
+  if(id){
+    var t = db.todos.find(function(x){ return x.id===id; });
+    if(!t) return;
+    $("todoSheetTitle").textContent = "할일 수정";
+    $("tText").value = t.text;
+    $("btnDeleteTodo").hidden = false;
+  }else{
+    $("todoSheetTitle").textContent = "할일 추가";
+    $("tText").value = "";
+    $("btnDeleteTodo").hidden = true;
+  }
+  openSheet("sheetTodo");
+}
+function saveTodoFromSheet(){
+  var text = $("tText").value.trim();
+  if(!text){ toast("내용을 입력하세요"); $("tText").focus(); return; }
+  if(state.editTodoId){
+    var t = db.todos.find(function(x){ return x.id===state.editTodoId; });
+    if(t) t.text = text;
+  }else{
+    db.todos.push({ id:uid(), text:text, done:false, bg:"" });
+  }
+  save();
+  closeSheet("sheetTodo");
+  renderTodoList();
+  toast("저장했습니다");
+}
+function deleteTodo(id){
+  if(!confirm("이 할일을 삭제할까요?")) return;
+  db.todos = db.todos.filter(function(x){ return x.id!==id; });
+  save();
+  renderTodoList();
+  toast("삭제했습니다");
+}
+function toggleTodo(id){
+  var t = db.todos.find(function(x){ return x.id===id; });
+  if(!t) return;
+  t.done = !t.done;
+  save();
+  renderTodoList();
+}
+function cycleColor(id){
+  var t = db.todos.find(function(x){ return x.id===id; });
+  if(!t) return;
+  var i = Math.max(0, TODO_COLORS.indexOf(t.bg||""));
+  t.bg = TODO_COLORS[(i+1)%TODO_COLORS.length];
+  save();
+  renderTodoList();
+}
+
+/* ── sms ───────────────────────────────── */
+function renderSmsHeader(){
+  $("smsPhone").value = db.settings.phone || "";
+  updateSmsPreview();
+}
+function buildAutoMessage(){
+  var lowItems = db.foods.filter(function(f){ return isLow(f)&&!isOut(f); });
+  var outItems = db.foods.filter(isOut);
+  if(!lowItems.length && !outItems.length) return "부족하거나 품절된 상품이 없습니다.";
+  var lines = ["[냉장고 재고 알림]"];
+  if(outItems.length){
+    lines.push("품절: "+outItems.map(function(f){ return f.name; }).join(", "));
+  }
+  if(lowItems.length){
+    lines.push("부족: "+lowItems.map(function(f){ return f.name+" "+f.qty+f.unit+"(기준 "+safetyOf(f)+f.unit+")"; }).join(", "));
+  }
+  lines.push("확인 후 구매 부탁드립니다.");
+  return lines.join("\n");
+}
+function updateSmsPreview(){
+  var body = $("smsBody").value;
+  var phone = $("smsPhone").value.trim();
+  $("smsPreviewTo").textContent = phone ? phone : "받는 사람 미입력";
+  $("smsPreviewNow").textContent = new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+  $("smsBubble").textContent = body || "미리보기가 여기에 표시됩니다.";
+  $("smsBubbleTime").textContent = "";
+  var len = body.length;
+  var counterEl = $("smsCounter");
+  counterEl.innerHTML = "<span>"+len+"자 / "+SMS_LIMIT+"자</span><span></span>";
+  counterEl.classList.toggle("over", len>SMS_LIMIT);
+  $("btnSendSms").href = "sms:"+encodeURIComponent(phone)+"?body="+encodeURIComponent(body);
+}
+function renderSentList(){
+  if(!db.sent.length){
+    $("sentList").innerHTML = '<div class="empty">보낸 기록이 없습니다.</div>';
+    return;
+  }
+  $("sentList").innerHTML = db.sent.slice().reverse().slice(0,20).map(function(s){
+    var t = new Date(s.at);
+    var when = isNaN(t.getTime()) ? "" : t.toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+    return '<div class="sent"><span class="sent__to mono">'+esc(when)+'</span><span class="sent__body">'+esc(s.to?s.to+" · ":"")+esc(s.body)+'</span></div>';
+  }).join("");
+}
+
+/* ── settings sheet ────────────────────── */
+function openSettingsSheet(){
+  $("sPhone").value = db.settings.phone||"";
+  $("sLow").value = db.settings.low;
+  openSheet("sheetSettings");
+}
+function saveSettings(){
+  db.settings.phone = $("sPhone").value.trim();
+  db.settings.low = Math.max(0, parseInt($("sLow").value,10)||0);
+  save();
+  closeSheet("sheetSettings");
+  renderAll();
+  toast("설정을 저장했습니다");
+}
+
+/* ── backup export / import ────────────── */
+function exportBackup(){
+  var blob = new Blob([JSON.stringify(db,null,2)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  var d = new Date();
+  var stamp = d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+  a.href = url;
+  a.download = "food-backup-"+stamp+".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("백업 파일을 저장했습니다");
+}
+function importBackup(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var parsed = JSON.parse(String(reader.result));
+      db = normalize(parsed);
+      save();
+      renderAll();
+      $("sPhone").value = db.settings.phone||"";
+      $("sLow").value = db.settings.low;
+      toast("백업 데이터를 적용했습니다");
+    }catch(e){
+      console.error(e);
+      toast("올바른 백업 파일이 아닙니다");
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ── render all ────────────────────────── */
+function renderAll(){
+  renderChips();
+  renderFoodList();
+  renderStats();
+  renderTodoList();
+  renderSentList();
+  if(state.tab==="sms") renderSmsHeader();
+}
+
+/* ── drag-to-adjust on food card ───────── */
+var suppressNextClick = false;
+function bindDrag(){
+  var startX=0, startY=0, dx=0, dragging=false, moved=false, row=null, card=null, id=null;
+  var THRESHOLD = 60, MOVE_THRESHOLD = 8;
+
+  $("foodList").addEventListener("pointerdown", function(e){
+    card = e.target.closest("[data-drag]");
+    if(!card) return;
+    if(e.target.closest(".stepper") || e.target.closest(".more")) return;
+    row = card.closest(".row");
+    id = card.dataset.id;
+    startX = e.clientX;
+    startY = e.clientY;
+    dx = 0;
+    moved = false;
+    dragging = true;
+    card.setPointerCapture(e.pointerId);
+  });
+  $("foodList").addEventListener("pointermove", function(e){
+    if(!dragging) return;
+    dx = e.clientX - startX;
+    var dy = e.clientY - startY;
+    if(!moved && Math.abs(dx) > MOVE_THRESHOLD && Math.abs(dx) > Math.abs(dy)){
+      moved = true;
+    }
+    if(!moved) return;
+    var clamped = Math.max(-90, Math.min(90, dx));
+    card.style.transform = "translateX("+clamped+"px)";
+    row.classList.add("is-drag");
+    row.classList.toggle("dir-plus", dx>0);
+    row.classList.toggle("dir-minus", dx<0);
+  });
+  function endDrag(e){
+    if(!dragging) return;
+    dragging = false;
+    card.style.transform = "";
+    row.classList.remove("is-drag","dir-plus","dir-minus");
+    if(moved){
+      suppressNextClick = true;
+      if(Math.abs(dx) >= THRESHOLD){
+        changeQty(id, dx>0 ? 1 : -1);
+      }
+    }
+    row=null; card=null; id=null; dx=0; moved=false;
+  }
+  $("foodList").addEventListener("pointerup", endDrag);
+  $("foodList").addEventListener("pointercancel", endDrag);
+}
+
+/* ── event binding ─────────────────────── */
+function bind(){
+  document.querySelectorAll(".tab").forEach(function(b){
+    b.addEventListener("click", function(){ setTab(b.dataset.tab); });
+  });
+  document.querySelectorAll(".stat").forEach(function(b){
+    b.addEventListener("click", function(){
+      setTab("fridge");
+      state.filter = b.dataset.jump==="low" ? "__low__" : "__all__";
+      renderChips();
+      renderFoodList();
+    });
+  });
+
+  $("chips").addEventListener("click", function(e){
+    var b = e.target.closest(".chip");
+    if(!b) return;
+    state.filter = b.dataset.filter;
+    renderChips();
+    renderFoodList();
+  });
+  $("foodSearch").addEventListener("input", renderFoodList);
+
+  $("foodList").addEventListener("click", function(e){
+    if(suppressNextClick){ suppressNextClick = false; e.preventDefault(); e.stopPropagation(); return; }
+    var stepBtn = e.target.closest("[data-step]");
+    if(stepBtn){ changeQty(stepBtn.dataset.id, Number(stepBtn.dataset.step)); return; }
+    var editBtn = e.target.closest("[data-edit]");
+    if(editBtn){ openFoodSheet(editBtn.dataset.edit); return; }
+    var delBtn = e.target.closest("[data-del]");
+    if(delBtn){ deleteFood(delBtn.dataset.del); return; }
+  });
+  bindDrag();
+
+  $("btnAddFood").addEventListener("click", function(){ openFoodSheet(null); });
+  $("btnSaveFood").addEventListener("click", saveFoodFromSheet);
+  $("btnDeleteFood").addEventListener("click", function(){
+    if(state.editFoodId){ closeSheet("sheetFood"); deleteFood(state.editFoodId); }
+  });
+  $("fPlaceSeg").addEventListener("click", function(e){
+    var addBtn = e.target.closest("[data-place-add]");
+    if(addBtn){ openPlaceSheet(); return; }
+    var pb = e.target.closest("[data-place]");
+    if(pb){
+      $("fPlaceSeg").querySelectorAll("button").forEach(function(b){ b.classList.remove("is-on"); });
+      pb.classList.add("is-on");
+    }
+  });
+
+  $("pSwatches").addEventListener("click", function(e){
+    var sw = e.target.closest(".swatch");
+    if(!sw) return;
+    pickedColor = sw.dataset.color;
+    $("pSwatches").querySelectorAll(".swatch").forEach(function(s){ s.classList.remove("is-on"); });
+    sw.classList.add("is-on");
+  });
+  $("btnSavePlace").addEventListener("click", savePlace);
+
+  $("btnAddTodo").addEventListener("click", function(){ openTodoSheet(null); });
+  $("btnSaveTodo").addEventListener("click", saveTodoFromSheet);
+  $("btnDeleteTodo").addEventListener("click", function(){
+    if(state.editTodoId){ closeSheet("sheetTodo"); deleteTodo(state.editTodoId); }
+  });
+  $("todoList").addEventListener("click", function(e){
+    var tog = e.target.closest("[data-toggle]"); if(tog){ toggleTodo(tog.dataset.toggle); return; }
+    var ed = e.target.closest("[data-edit-todo]"); if(ed){ openTodoSheet(ed.dataset.editTodo); return; }
+    var col = e.target.closest("[data-color]"); if(col){ cycleColor(col.dataset.color); return; }
+    var del = e.target.closest("[data-del-todo]"); if(del){ deleteTodo(del.dataset.delTodo); return; }
+  });
+
+  $("smsPhone").addEventListener("input", function(){ db.settings.phone=$("smsPhone").value.trim(); save(); updateSmsPreview(); });
+  $("smsBody").addEventListener("input", updateSmsPreview);
+  $("btnAutoMsg").addEventListener("click", function(){ $("smsBody").value = buildAutoMessage(); updateSmsPreview(); });
+  $("btnSendSms").addEventListener("click", function(){
+    var phone = $("smsPhone").value.trim();
+    var body = $("smsBody").value.trim();
+    if(!body){ toast("보낼 내용을 입력하세요"); return; }
+    db.sent.push({ id:uid(), to:phone, body:body, at:new Date().toISOString() });
+    save();
+    renderSentList();
+  });
+  $("btnGoSms2").addEventListener("click", function(){ $("smsBody").focus(); });
+  $("btnClearSent").addEventListener("click", function(){
+    if(!db.sent.length) return;
+    if(!confirm("보낸 문자 기록을 모두 삭제할까요?")) return;
+    db.sent = [];
+    save();
+    renderSentList();
+    toast("기록을 삭제했습니다");
+  });
+
+  $("btnSettings").addEventListener("click", openSettingsSheet);
+  $("btnCloseSettings").addEventListener("click", function(){ closeSheet("sheetSettings"); });
+  $("btnSaveSettings").addEventListener("click", saveSettings);
+  $("btnExport").addEventListener("click", exportBackup);
+  $("btnImport").addEventListener("click", function(){ $("fileImport").click(); });
+  $("fileImport").addEventListener("change", function(){
+    var file = $("fileImport").files[0];
+    if(file) importBackup(file);
+    $("fileImport").value = "";
+  });
+
+  document.querySelectorAll("[data-close]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var sheet = b.closest(".sheet");
+      if(sheet) closeSheet(sheet.id);
+    });
+  });
+}
+
+init();
+})();
+</script>
+</body>
+</html>

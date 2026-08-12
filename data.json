@@ -1,9 +1,9 @@
 {
   "foods": [
-    { "id": "food001", "name": "계란", "qty": 10, "place": "냉장" },
-    { "id": "food002", "name": "닭가슴살", "qty": 5, "place": "냉동" },
-    { "id": "food003", "name": "감자", "qty": 6, "place": "실온" },
-    { "id": "food004", "name": "우유", "qty": 2, "place": "냉장" }
+    { "id": "food001", "name": "계란", "qty": 10, "place": "냉장", "unit": "개", "safety": 6 },
+    { "id": "food002", "name": "닭가슴살", "qty": 5, "place": "냉동", "unit": "팩", "safety": 3 },
+    { "id": "food003", "name": "감자", "qty": 6, "place": "실온", "unit": "개", "safety": 4 },
+    { "id": "food004", "name": "우유", "qty": 2, "place": "냉장", "unit": "개", "safety": 2 }
   ],
   "todos": [
     { "id": "todo001", "text": "계란 주문하기", "done": false, "bg": "" },
@@ -17,8 +17,8 @@
       { "name": "냉장", "color": "#2f86b4" },
       { "name": "냉동", "color": "#5568d8" },
       { "name": "실온", "color": "#b8862b" }
-    ]
+    ],
+    "units": ["개", "봉지", "팩", "병", "통", "판", "kg", "g", "L", "ml"]
   },
   "sent": []
 }
-
