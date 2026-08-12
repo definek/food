@@ -176,6 +176,9 @@ textarea{resize:vertical;line-height:1.55}
 .plc__dot{flex:none;width:12px;height:12px;border-radius:4px;background:var(--zone)}
 .plc__name{flex:1;min-width:0;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plc__n{flex:none;font-size:12px;color:var(--ink-2)}
+.plc__actions{display:flex;gap:4px;flex:none}
+.plc__actions .icon{width:26px;height:26px;font-size:12px}
+.plc__actions .icon[disabled]{opacity:.3;cursor:default}
 
 /* ── toast ──────────────────────────────── */
 .toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;gap:14px;max-width:88vw;padding:11px 16px;border-radius:12px;background:var(--ink);color:var(--ink-on);font-size:13.5px;font-weight:500;transform:translate(-50%,14px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
@@ -203,7 +206,7 @@ textarea{resize:vertical;line-height:1.55}
         <span class="stat__v mono" id="sKinds">0<i>종</i></span>
       </button>
       <button class="stat" data-jump="all" type="button">
-        <span class="stat__k">전체 수량</span>
+        <span class="stat__k" id="sQtyLabel">전체 수량</span>
         <span class="stat__v mono" id="sQty">0<i>개</i></span>
       </button>
       <button class="stat stat--alert" data-jump="low" type="button">
@@ -317,12 +320,12 @@ textarea{resize:vertical;line-height:1.55}
   </div>
 </div>
 
-<!-- 보관 위치 추가 시트 -->
+<!-- 보관 위치 추가/수정 시트 -->
 <div class="sheet" id="sheetPlace" hidden>
   <div class="scrim" data-close></div>
   <div class="panel">
     <div class="grip"></div>
-    <h2>보관 위치 추가</h2>
+    <h2 id="placeSheetTitle">보관 위치 추가</h2>
     <div class="field">
       <label for="pName">위치 이름</label>
       <input id="pName" placeholder="예: 팬트리">
@@ -334,6 +337,20 @@ textarea{resize:vertical;line-height:1.55}
     <div class="btn-row">
       <button class="btn btn--ghost" data-close type="button">취소</button>
       <button class="btn btn--primary" id="btnSavePlace" type="button">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 보관 위치 관리(순서/수정/삭제) 시트 -->
+<div class="sheet" id="sheetPlaces" hidden>
+  <div class="scrim" data-close></div>
+  <div class="panel">
+    <div class="grip"></div>
+    <h2>보관 위치 관리</h2>
+    <div id="placesList"></div>
+    <div class="btn-row">
+      <button class="btn btn--ghost" data-close type="button">닫기</button>
+      <button class="btn btn--primary" id="btnAddPlaceFromList" type="button">+ 위치 추가</button>
     </div>
   </div>
 </div>
@@ -524,10 +541,11 @@ function setTab(tab){
 /* ── render: fridge ────────────────────── */
 function renderChips(){
   var chips = ['<button class="chip'+(state.filter==="__all__"?" is-on":"")+'" data-filter="__all__" type="button">전체</button>'];
-  chips.push('<button class="chip'+(state.filter==="__low__"?" is-on":"")+'" data-filter="__low__" type="button"><span class="dot" style="--zone:var(--minus)"></span>부족·품절</button>');
   db.settings.places.forEach(function(p){
     chips.push('<button class="chip'+(state.filter===p.name?" is-on":"")+'" data-filter="'+esc(p.name)+'" style="--zone:'+esc(p.color)+'" type="button"><span class="dot"></span>'+esc(p.name)+'</button>');
   });
+  chips.push('<button class="chip'+(state.filter==="__low__"?" is-on":"")+'" data-filter="__low__" type="button"><span class="dot" style="--zone:var(--minus)"></span>부족·품절</button>');
+  chips.push('<button class="chip" data-action="edit-places" type="button">위치 편집</button>');
   $("chips").innerHTML = chips.join("");
 }
 
@@ -538,11 +556,8 @@ function placeColor(name){
 
 function renderFoodList(){
   var q = $("foodSearch").value.trim().toLowerCase();
-  var list = db.foods.filter(function(f){
-    if(q && f.name.toLowerCase().indexOf(q)===-1) return false;
-    if(state.filter==="__all__") return true;
-    if(state.filter==="__low__") return isLow(f);
-    return f.place===state.filter;
+  var list = scopedFoods().filter(function(f){
+    return !q || f.name.toLowerCase().indexOf(q)!==-1;
   });
 
   if(!list.length){
@@ -573,11 +588,19 @@ function renderFoodList(){
   }).join("");
 }
 
+function scopedFoods(){
+  if(state.filter==="__all__") return db.foods;
+  if(state.filter==="__low__") return db.foods.filter(isLow);
+  return db.foods.filter(function(f){ return f.place===state.filter; });
+}
+
 function renderStats(){
-  $("sKinds").innerHTML = db.foods.length+"<i>종</i>";
-  var totalQty = db.foods.reduce(function(a,f){ return a+Number(f.qty||0); },0);
+  var scope = scopedFoods();
+  $("sKinds").innerHTML = scope.length+"<i>종</i>";
+  var totalQty = scope.reduce(function(a,f){ return a+Number(f.qty||0); },0);
   $("sQty").innerHTML = totalQty+"<i>개</i>";
-  var lowCount = db.foods.filter(isLow).length;
+  $("sQtyLabel").textContent = state.filter==="__all__" ? "전체 수량" : (state.filter==="__low__" ? "부족 수량" : state.filter+" 수량");
+  var lowCount = scope.filter(isLow).length;
   $("sLow").innerHTML = lowCount+"<i>종</i>";
 }
 
@@ -672,27 +695,112 @@ function deleteFood(id){
   toast("삭제했습니다");
 }
 
-/* ── place sheet ───────────────────────── */
+/* ── place sheet (add / edit) ──────────── */
 var pickedColor = "#2f86b4";
-function openPlaceSheet(){
-  $("pName").value = "";
-  pickedColor = "#2f86b4";
-  var swatchColors = ["#2f86b4","#5568d8","#b8862b","#2f9e6f","#c0553f","#7a5bd1","#4d8f3f","#c04f8e"];
-  $("pSwatches").innerHTML = swatchColors.map(function(c,i){
-    return '<button type="button" class="swatch'+(i===0?" is-on":"")+'" style="background:'+c+'" data-color="'+c+'"></button>';
+var editingPlaceIndex = null;
+var placeSheetReturnToList = false;
+var PLACE_SWATCHES = ["#2f86b4","#5568d8","#b8862b","#2f9e6f","#c0553f","#7a5bd1","#4d8f3f","#c04f8e"];
+
+function openPlaceSheet(index, fromList){
+  editingPlaceIndex = (typeof index==="number") ? index : null;
+  placeSheetReturnToList = !!fromList;
+  if(fromList){
+    $("sheetPlaces").classList.remove("is-open");
+    $("sheetPlaces").hidden = true;
+  }
+  var existing = editingPlaceIndex!=null ? db.settings.places[editingPlaceIndex] : null;
+  $("placeSheetTitle").textContent = existing ? "보관 위치 수정" : "보관 위치 추가";
+  $("btnSavePlace").textContent = existing ? "저장" : "추가";
+  $("pName").value = existing ? existing.name : "";
+  pickedColor = existing ? existing.color : PLACE_SWATCHES[0];
+  $("pSwatches").innerHTML = PLACE_SWATCHES.map(function(c){
+    return '<button type="button" class="swatch'+(c===pickedColor?" is-on":"")+'" style="background:'+c+'" data-color="'+c+'"></button>';
   }).join("");
   openSheet("sheetPlace");
 }
+
 function savePlace(){
   var name = $("pName").value.trim();
   if(!name){ toast("위치 이름을 입력하세요"); return; }
-  if(db.settings.places.some(function(p){ return p.name===name; })){ toast("이미 있는 위치입니다"); return; }
-  db.settings.places.push({ name:name, color:pickedColor });
+  var dup = db.settings.places.some(function(p,i){ return p.name===name && i!==editingPlaceIndex; });
+  if(dup){ toast("이미 있는 위치입니다"); return; }
+
+  if(editingPlaceIndex!=null){
+    var target = db.settings.places[editingPlaceIndex];
+    var oldName = target.name;
+    target.name = name;
+    target.color = pickedColor;
+    if(oldName!==name){
+      db.foods.forEach(function(f){ if(f.place===oldName) f.place=name; });
+      if(state.filter===oldName) state.filter = name;
+    }
+  }else{
+    db.settings.places.push({ name:name, color:pickedColor });
+  }
   save();
   closeSheet("sheetPlace");
-  renderPlaceSeg(name);
   renderChips();
-  toast("위치를 추가했습니다");
+  renderFoodList();
+  renderStats();
+  renderPlaceSeg(name);
+  renderPlacesList();
+  toast(editingPlaceIndex!=null ? "위치를 수정했습니다" : "위치를 추가했습니다");
+  editingPlaceIndex = null;
+  if(placeSheetReturnToList){ placeSheetReturnToList=false; openSheet("sheetPlaces"); }
+}
+
+/* ── place management sheet (list/reorder/delete) ─ */
+function openPlacesSheet(){
+  renderPlacesList();
+  openSheet("sheetPlaces");
+}
+
+function renderPlacesList(){
+  var places = db.settings.places;
+  $("placesList").innerHTML = places.map(function(p,i){
+    var count = db.foods.filter(function(f){ return f.place===p.name; }).length;
+    return '<div class="plc">'+
+      '<span class="plc__dot" style="--zone:'+esc(p.color)+'"></span>'+
+      '<span class="plc__name">'+esc(p.name)+'</span>'+
+      '<span class="plc__n">'+count+'종</span>'+
+      '<span class="plc__actions">'+
+        '<button class="icon" data-move="'+i+':-1" type="button" aria-label="위로"'+(i===0?" disabled":"")+'>↑</button>'+
+        '<button class="icon" data-move="'+i+':1" type="button" aria-label="아래로"'+(i===places.length-1?" disabled":"")+'>↓</button>'+
+        '<button class="icon" data-edit-place="'+i+'" type="button" aria-label="수정">✎</button>'+
+        '<button class="icon" data-del-place="'+i+'" type="button" aria-label="삭제">🗑</button>'+
+      '</span>'+
+    '</div>';
+  }).join("");
+}
+
+function movePlace(index, dir){
+  var arr = db.settings.places;
+  var target = index+dir;
+  if(target<0 || target>=arr.length) return;
+  var tmp = arr[index];
+  arr[index] = arr[target];
+  arr[target] = tmp;
+  save();
+  renderPlacesList();
+  renderChips();
+  renderFoodList();
+}
+
+function deletePlace(index){
+  var p = db.settings.places[index];
+  if(!p) return;
+  if(db.settings.places.length<=1){ toast("최소 1개의 위치가 필요합니다"); return; }
+  var inUse = db.foods.some(function(f){ return f.place===p.name; });
+  if(inUse){ toast("이 위치를 사용하는 상품이 있어 삭제할 수 없습니다"); return; }
+  if(!confirm('"'+p.name+'" 위치를 삭제할까요?')) return;
+  db.settings.places.splice(index,1);
+  if(state.filter===p.name) state.filter = "__all__";
+  save();
+  renderPlacesList();
+  renderChips();
+  renderFoodList();
+  renderStats();
+  toast("삭제했습니다");
 }
 
 /* ── todo ──────────────────────────────── */
@@ -929,15 +1037,19 @@ function bind(){
       state.filter = b.dataset.jump==="low" ? "__low__" : "__all__";
       renderChips();
       renderFoodList();
+      renderStats();
     });
   });
 
   $("chips").addEventListener("click", function(e){
+    var editBtn = e.target.closest('[data-action="edit-places"]');
+    if(editBtn){ openPlacesSheet(); return; }
     var b = e.target.closest(".chip");
     if(!b) return;
     state.filter = b.dataset.filter;
     renderChips();
     renderFoodList();
+    renderStats();
   });
   $("foodSearch").addEventListener("input", renderFoodList);
 
@@ -975,6 +1087,16 @@ function bind(){
     sw.classList.add("is-on");
   });
   $("btnSavePlace").addEventListener("click", savePlace);
+
+  $("btnAddPlaceFromList").addEventListener("click", function(){ openPlaceSheet(null, true); });
+  $("placesList").addEventListener("click", function(e){
+    var mv = e.target.closest("[data-move]");
+    if(mv){ var parts=mv.dataset.move.split(":"); movePlace(Number(parts[0]), Number(parts[1])); return; }
+    var ed = e.target.closest("[data-edit-place]");
+    if(ed){ openPlaceSheet(Number(ed.dataset.editPlace), true); return; }
+    var del = e.target.closest("[data-del-place]");
+    if(del){ deletePlace(Number(del.dataset.delPlace)); return; }
+  });
 
   $("btnAddTodo").addEventListener("click", function(){ openTodoSheet(null); });
   $("btnSaveTodo").addEventListener("click", saveTodoFromSheet);
@@ -1024,7 +1146,12 @@ function bind(){
   document.querySelectorAll("[data-close]").forEach(function(b){
     b.addEventListener("click", function(){
       var sheet = b.closest(".sheet");
-      if(sheet) closeSheet(sheet.id);
+      if(!sheet) return;
+      closeSheet(sheet.id);
+      if(sheet.id==="sheetPlace" && placeSheetReturnToList){
+        placeSheetReturnToList = false;
+        openSheet("sheetPlaces");
+      }
     });
   });
 }
