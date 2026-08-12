@@ -204,7 +204,7 @@ textarea{resize:vertical;line-height:1.55}
         <span class="stat__v mono" id="sOk">0<i>종</i></span>
       </button>
       <button class="stat stat--alert" data-jump="low">
-        <span class="stat__k">안전재고 미만</span>
+        <span class="stat__k">안전재고 이하</span>
         <span class="stat__v mono" id="sLow">0<i>종</i></span>
       </button>
     </div>
@@ -429,8 +429,15 @@ const save = () => store.set(KEY, JSON.stringify(db));
 const minOf = f => (f.min === null || f.min === undefined) ? db.settings.low : f.min;
 const isLow = f => f.qty <= minOf(f);
 const shortOf = f => Math.max(0, minOf(f) - f.qty);      /* 안전재고까지 모자란 양 */
-const amt = (n, f) => `${n}${f.unit}`;
+const amt = (n, f) => `${n}${f.unit}`;          /* 문자·토스트처럼 글자로 쓰는 곳 */
+const amtH = (n, f) => `${n}${esc(f.unit)}`;    /* innerHTML로 넣는 곳 (단위는 직접 입력값) */
 const stepOf = f => BIG_UNITS[f.unit] || 1;
+/* 단위가 섞여 있으면 합계를 하나로 못 묶으니 단위별로 나눠 적는다 */
+function sumByUnit(items) {
+  const m = new Map();
+  items.forEach(f => m.set(f.unit, (m.get(f.unit) || 0) + f.qty));
+  return [...m].map(([u, n]) => `${n}${u}`).join(" · ");
+}
 /* 단위가 제각각이라 부족량 절대값 대신 비율로 정렬한다 (500g과 2병은 비교 불가) */
 const shortRate = f => { const m = minOf(f); return m > 0 ? shortOf(f) / m : (f.qty === 0 ? 1 : 0); };
 const lowItems = () => db.foods.filter(isLow).sort((a, b) =>
@@ -484,9 +491,9 @@ function renderFood() {
       </div>
     </article>`).join("");
 }
-const metaOf = f => `${esc(f.place)}<span class="mono">${amt(f.qty, f)}</span><span class="mono base">기준 ${amt(minOf(f), f)}</span>${tagOf(f)}`;
+const metaOf = f => `${esc(f.place)}<span class="mono">${amtH(f.qty, f)}</span><span class="mono base">기준 ${amtH(minOf(f), f)}</span>${tagOf(f)}`;
 const tagOf = f => f.qty === 0 ? '<span class="tag tag--out">품절</span>'
-  : (isLow(f) ? `<span class="tag tag--low">${shortOf(f) > 0 ? amt(shortOf(f), f) + " 부족" : "기준선"}</span>` : "");
+  : (isLow(f) ? `<span class="tag tag--low">${shortOf(f) > 0 ? amtH(shortOf(f), f) + " 부족" : "기준선"}</span>` : "");
 
 /* 목록 전체를 다시 그리지 않고 한 줄만 갱신 — 스와이프 애니메이션이 끊기지 않도록 */
 function patchRow(id, dir) {
@@ -837,21 +844,22 @@ $("sheet").addEventListener("click", e => { if (e.target.dataset.close !== undef
 window.addEventListener("keydown", e => { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
 
 /* ── 보관 위치(냉장고 이름) ─────────────── */
+/* 실제로 저장된 이름을 돌려준다 — 12자로 자른 뒤의 이름을 쓰지 않으면
+   상품이 목록에 없는 보관 위치에 배정된다 */
 function addPlace(name) {
   name = String(name).trim().slice(0, 12);
-  if (!name) return false;
-  if (placeNames().includes(name)) { toast(`‘${name}’은(는) 이미 있습니다`); return false; }
+  if (!name) return null;
+  if (placeNames().includes(name)) { toast(`‘${name}’은(는) 이미 있습니다`); return null; }
   places().push({ name, color: freeColor() });
   save();
-  return true;
+  return name;
 }
 let undoBin = null;
 function removePlace(name) {
   if (places().length <= 1) return toast("보관 위치는 최소 1개가 필요합니다");
   const used = db.foods.filter(f => f.place === name);
-  const qty = used.reduce((a, f) => a + f.qty, 0);
   const msg = used.length
-    ? `‘${name}’을(를) 지우면 그 안의 상품 ${used.length}종(${qty}개)도 함께 삭제됩니다.\n계속할까요?`
+    ? `‘${name}’을(를) 지우면 그 안의 상품 ${used.length}종(${sumByUnit(used)})도 함께 삭제됩니다.\n계속할까요?`
     : `‘${name}’을(를) 삭제할까요?`;
   if (!confirm(msg)) return;
 
@@ -877,11 +885,10 @@ function renderPlaces() {
   if (!el) return;
   el.innerHTML = places().map(p => {
     const items = db.foods.filter(f => f.place === p.name);
-    const qty = items.reduce((a, f) => a + f.qty, 0);
     return `<div class="plc" style="--zone:${p.color}">
       <span class="plc__dot"></span>
       <span class="plc__name">${esc(p.name)}</span>
-      <span class="plc__n mono">${items.length}종 · ${qty}개</span>
+      <span class="plc__n mono">${items.length}종${items.length ? " · " + esc(sumByUnit(items)) : ""}</span>
       <button class="icon" data-color="${esc(p.name)}" aria-label="${esc(p.name)} 색상 고르기">◐</button>
       <button class="icon" data-del="${esc(p.name)}" aria-label="${esc(p.name)} 삭제">✕</button>
     </div>`;
@@ -901,11 +908,11 @@ function openPlaces() {
   `, () => {
     renderPlaces();
     const add = () => {
-      const v = $("plcName").value;
-      if (!addPlace(v)) return;
+      const added = addPlace($("plcName").value);
+      if (!added) return;
       $("plcName").value = "";
       renderFilters(); renderPlaces(); renderFood();
-      toast(`‘${v.trim()}’을(를) 추가했습니다`);
+      toast(`‘${added}’을(를) 추가했습니다`);
     };
     $("plcAdd").onclick = add;
     $("plcName").onkeydown = e => { if (e.key === "Enter") add(); };
@@ -1010,8 +1017,9 @@ function openFood(id) {
       if (b.dataset.add) {
         const name = prompt("새 보관 위치 이름 (예: 김치냉장고)");
         if (!name || !name.trim()) return;
-        if (!addPlace(name.trim())) return;
-        place = name.trim();
+        const added = addPlace(name);
+        if (!added) return;
+        place = added;
         $("fPlace").innerHTML = placeSeg(place);
         renderFilters();
         return;
