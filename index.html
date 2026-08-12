@@ -41,16 +41,14 @@ body{
   overscroll-behavior-y:none;
 }
 .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
-button{font:inherit;color:inherit;border:0;background:none;padding:0;appearance:none}
+button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .app{max-width:560px;margin:0 auto;padding:20px 16px calc(104px + env(safe-area-inset-bottom))}
 
 /* ── header ─────────────────────────────── */
-.eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .eyebrow{font-size:11px;letter-spacing:.18em;color:var(--ink-2)}
-.gear{flex:none;width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink-2);font-size:14px;cursor:pointer}
 h1{margin:7px 0 0;font-size:31px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 h1 span{font-weight:300;color:var(--ink-2)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
@@ -94,7 +92,7 @@ textarea{resize:vertical;line-height:1.55}
 .hint--plus{color:var(--plus)}
 .hint--minus{color:var(--minus)}
 .card{position:relative;display:flex;align-items:center;gap:8px;padding:13px 10px 13px 15px;background:var(--surface);border-left:3px solid var(--zone,var(--line));touch-action:pan-y;will-change:transform;user-select:none;-webkit-user-select:none}
-.card .more{width:30px;height:34px;border:0;background:transparent;font-size:17px;letter-spacing:1px}
+.card .more{width:30px;height:34px;background:transparent;font-size:17px;letter-spacing:1px}
 .card .more:active{background:var(--surface-2)}
 .main{flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;cursor:pointer}
 .name{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -141,7 +139,7 @@ textarea{resize:vertical;line-height:1.55}
 .note{margin-top:12px;padding:11px 13px;background:var(--surface-2);border-radius:12px;font-size:11.5px;line-height:1.6;color:var(--ink-2)}
 
 /* ── buttons / bar ──────────────────────── */
-.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border:0;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:14px;border:0;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer}
 .btn--primary{background:var(--ink);color:var(--ink-on)}
 .btn--ghost{background:var(--surface);border:1px solid var(--line)}
 .btn--danger{background:transparent;border:1px solid var(--line);color:var(--minus)}
@@ -176,9 +174,6 @@ textarea{resize:vertical;line-height:1.55}
 .plc__dot{flex:none;width:12px;height:12px;border-radius:4px;background:var(--zone)}
 .plc__name{flex:1;min-width:0;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plc__n{flex:none;font-size:12px;color:var(--ink-2)}
-.plc__actions{display:flex;gap:4px;flex:none}
-.plc__actions .icon{width:26px;height:26px;font-size:12px}
-.plc__actions .icon[disabled]{opacity:.3;cursor:default}
 
 /* ── toast ──────────────────────────────── */
 .toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;gap:14px;max-width:88vw;padding:11px 16px;border-radius:12px;background:var(--ink);color:var(--ink-on);font-size:13.5px;font-weight:500;transform:translate(-50%,14px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
@@ -195,21 +190,18 @@ textarea{resize:vertical;line-height:1.55}
 
 <div class="app">
   <header>
-    <div class="eyebrow-row">
-      <div class="eyebrow mono" id="today"></div>
-      <button class="gear" id="btnSettings" aria-label="설정" type="button">⚙</button>
-    </div>
+    <div class="eyebrow mono" id="today"></div>
     <h1>냉장고 <span>재고</span></h1>
     <div class="stats">
-      <button class="stat" data-jump="all" type="button">
+      <button class="stat" data-jump="all">
         <span class="stat__k">상품 종류</span>
         <span class="stat__v mono" id="sKinds">0<i>종</i></span>
       </button>
-      <button class="stat" data-jump="all" type="button">
-        <span class="stat__k" id="sQtyLabel">전체 수량</span>
+      <button class="stat" data-jump="all">
+        <span class="stat__k">전체 수량</span>
         <span class="stat__v mono" id="sQty">0<i>개</i></span>
       </button>
-      <button class="stat stat--alert" data-jump="low" type="button">
+      <button class="stat stat--alert" data-jump="low">
         <span class="stat__k">부족 · 품절</span>
         <span class="stat__v mono" id="sLow">0<i>종</i></span>
       </button>
@@ -218,9 +210,9 @@ textarea{resize:vertical;line-height:1.55}
 
   <div class="tabs" role="tablist">
     <span class="thumb" id="thumb"></span>
-    <button class="tab is-on" role="tab" data-tab="fridge" type="button">냉장고</button>
-    <button class="tab" role="tab" data-tab="todo" type="button">할일</button>
-    <button class="tab" role="tab" data-tab="sms" type="button">문자</button>
+    <button class="tab is-on" role="tab" data-tab="fridge">냉장고</button>
+    <button class="tab" role="tab" data-tab="todo">할일</button>
+    <button class="tab" role="tab" data-tab="sms">문자</button>
   </div>
 
   <!-- 냉장고 -->
@@ -228,936 +220,850 @@ textarea{resize:vertical;line-height:1.55}
     <div class="search">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M11 11L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M11 11l3.2 3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
-      <input id="foodSearch" placeholder="상품 검색" autocomplete="off">
+      <input id="q" placeholder="상품 검색" autocomplete="off">
     </div>
-    <div class="chips" id="chips" role="tablist"></div>
+    <div class="chips" id="filters"></div>
     <div class="list" id="foodList"></div>
   </section>
 
   <!-- 할일 -->
   <section id="viewTodo" hidden>
     <div class="list" id="todoList"></div>
+    <div class="btn-row">
+      <button class="btn btn--ghost" id="resetColors">배경색 초기화</button>
+      <button class="btn btn--danger" id="clearDone">완료 항목 삭제</button>
+    </div>
   </section>
 
   <!-- 문자 -->
   <section id="viewSms" hidden>
     <div class="card-box">
       <div class="box-title">받는 사람</div>
-      <input id="smsPhone" placeholder="010-0000-0000" inputmode="tel" autocomplete="off">
+      <div class="field-row">
+        <input id="phone" type="tel" inputmode="tel" placeholder="010-0000-0000" autocomplete="tel">
+        <input id="lowLimit" type="number" min="0" max="99" inputmode="numeric" aria-label="부족 기준 수량">
+      </div>
+      <div class="counter"><span id="phoneHint">여러 명은 쉼표로 구분</span><span id="lowHint">부족 기준 2개 이하</span></div>
     </div>
 
     <div class="card-box">
       <div class="box-title">보낼 내용</div>
-      <textarea id="smsBody" rows="6" placeholder="자동 생성 버튼을 눌러보세요"></textarea>
-      <div class="counter" id="smsCounter"><span>0자</span><span></span></div>
-      <div class="btn-row">
-        <button class="btn btn--ghost" id="btnAutoMsg" type="button">부족재고 자동 생성</button>
-        <a class="btn btn--primary" id="btnSendSms" href="sms:">문자 보내기</a>
+      <div class="chips" id="tpl">
+        <button class="chip is-on" data-tpl="shop">장보기 목록</button>
+        <button class="chip" data-tpl="stock">재고 전체</button>
+        <button class="chip" data-tpl="todo">할일 목록</button>
+        <button class="chip" data-tpl="custom">직접 작성</button>
       </div>
+      <textarea id="msg" rows="6" placeholder="보낼 내용을 입력하세요"></textarea>
+      <div class="counter" id="counter"><span class="mono">0자 · 0바이트</span><span>단문(SMS)</span></div>
+
       <div class="preview">
-        <div class="preview__top"><span id="smsPreviewTo">받는 사람 미입력</span><span id="smsPreviewNow"></span></div>
-        <div class="bubble" id="smsBubble">미리보기가 여기에 표시됩니다.</div>
-        <div class="bubble__time" id="smsBubbleTime"></div>
+        <div class="preview__top"><span id="pvTo">받는 사람 없음</span><span class="mono" id="pvKind">미리보기</span></div>
+        <div class="bubble" id="pvBody"></div>
+        <div class="bubble__time mono" id="pvTime"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="copyBtn">내용 복사</button>
+        <button class="btn btn--ghost" id="shareBtn">공유</button>
+      </div>
+      <div class="note" id="smsNote">
+        아이폰에서는 <b>메시지</b> 앱이 열리면서 받는 사람과 내용이 채워집니다. 마지막 <b>보내기</b>는 직접 눌러야 하고, 요금은 통신사 문자 요금제를 따릅니다.
+        서버에서 자동으로 보내려면 문자 API(솔라피·알리고·NHN Cloud 등) 연동이 필요하고, 스크립트 아래쪽 <b>sendViaApi()</b> 자리에 연결하면 됩니다.
       </div>
     </div>
 
-    <div class="card-box" id="sentBox">
-      <div class="box-title">보낸 문자 기록</div>
+    <div class="card-box" id="sentBox" hidden>
+      <div class="box-title">최근 발송</div>
       <div id="sentList"></div>
     </div>
-
-    <div class="note">문자 보내기를 누르면 기기의 문자 앱이 열립니다. 실제 발송은 문자 앱에서 이뤄지며, 이 기록은 이 브라우저에만 저장됩니다.</div>
   </section>
+
+  <p class="note" id="storeNote" hidden></p>
 </div>
 
-<div class="bar">
-  <div class="bar__in" id="barFridge">
-    <button class="btn btn--primary" id="btnAddFood" type="button">+ 상품 추가</button>
-  </div>
-  <div class="bar__in" id="barTodo" hidden>
-    <button class="btn btn--primary" id="btnAddTodo" type="button">+ 할일 추가</button>
-  </div>
-  <div class="bar__in" id="barSms" hidden>
-    <div class="btn-row" style="margin-top:0">
-      <button class="btn btn--ghost" id="btnClearSent" type="button">기록 삭제</button>
-      <button class="btn btn--primary" id="btnGoSms2" type="button">문자 작성</button>
-    </div>
-  </div>
-</div>
+<div class="bar"><div class="bar__in"><button class="btn btn--primary" id="fab">+ 상품 추가</button></div></div>
 
-<!-- 상품 추가/수정 시트 -->
-<div class="sheet" id="sheetFood" hidden>
+<div class="sheet" id="sheet" hidden>
   <div class="scrim" data-close></div>
-  <div class="panel">
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="grip"></div>
-    <h2 id="foodSheetTitle">상품 추가</h2>
-    <div class="field">
-      <label for="fName">상품명</label>
-      <input id="fName" placeholder="예: 계란">
-    </div>
-    <div class="field">
-      <label>수량 / 단위</label>
+    <h2 id="sheetTitle"></h2>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ────────────────────────────────────────────────
+   냉장고 재고 · 할일 · 문자
+   - 스와이프로 수량 증감 (오른쪽 채움 / 왼쪽 사용)
+   - 부족 상품을 문자 내용으로 자동 작성
+──────────────────────────────────────────────── */
+const KEY = "fridge_v3";
+const OLD_KEY = "fridge_todo_json_v2";
+const DEFAULT_PLACES = [
+  { name: "냉장", color: "#2f86b4" },
+  { name: "냉동", color: "#5568d8" },
+  { name: "실온", color: "#b8862b" }
+];
+const PLACE_COLORS = ["#2f86b4", "#5568d8", "#b8862b", "#0f8f83", "#cf4f46", "#8b5cf6", "#d9752b", "#4a7c3f", "#64748b", "#c2417f"];
+const COLORS = ["", "background:#fff4d6", "background:#ffe1e1", "background:#ffe6cc", "background:#e7f5da",
+  "background:#d9f2ee", "background:#ddeefb", "background:#e6e2fb", "background:#fbdff1", "background:#ececee"];
+
+const DEFAULT_DATA = {
+  foods: [
+    { id: "food001", name: "계란", qty: 10, place: "냉장" },
+    { id: "food002", name: "닭가슴살", qty: 5, place: "냉동" },
+    { id: "food003", name: "감자", qty: 6, place: "실온" },
+    { id: "food004", name: "우유", qty: 2, place: "냉장" }
+  ],
+  todos: [
+    { id: "todo001", text: "계란 주문하기", done: false, bg: "" },
+    { id: "todo002", text: "냉동실 정리하기", done: false, bg: "background:#ddeefb" },
+    { id: "todo003", text: "우유 확인하기", done: true, bg: "" }
+  ],
+  settings: { phone: "", low: 2 },
+  sent: []
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
+const uid = () => Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+/* 저장소: localStorage를 쓸 수 없는 환경(미리보기 iframe 등)에서는 메모리로 대체 */
+const store = (() => {
+  let mem = {}, ok = true;
+  try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); } catch (e) { ok = false; }
+  return {
+    ok,
+    get(k) { try { return ok ? localStorage.getItem(k) : (k in mem ? mem[k] : null); } catch (e) { return null; } },
+    set(k, v) { try { ok ? localStorage.setItem(k, v) : (mem[k] = v); } catch (e) { mem[k] = v; } }
+  };
+})();
+
+let db = { foods: [], todos: [], settings: { phone: "", low: 2, places: [] }, sent: [] };
+let tab = "fridge", filter = "all", tpl = "shop", firstPaint = true;
+
+const places = () => db.settings.places;
+const placeNames = () => places().map(p => p.name);
+const zoneOf = name => { const p = places().find(v => v.name === name); return p ? p.color : "var(--line)"; };
+const freeColor = () => PLACE_COLORS.find(c => !places().some(p => p.color === c)) || PLACE_COLORS[places().length % PLACE_COLORS.length];
+
+/* ── 초기화 ───────────────────────────── */
+function normalize(x) {
+  const s = x.settings || {};
+  const list = (Array.isArray(s.places) && s.places.length ? s.places : DEFAULT_PLACES)
+    .map(p => (typeof p === "string" ? { name: p, color: "" } : { name: String(p.name || ""), color: p.color || "" }))
+    .filter(p => p.name);
+  const seen = new Set();
+  const out = [];
+  list.forEach(p => { if (!seen.has(p.name)) { seen.add(p.name); out.push(p); } });
+
+  const foods = (Array.isArray(x.foods) ? x.foods : []).map(f => ({
+    id: f.id || uid(), name: String(f.name || "이름 없음"),
+    qty: Math.max(0, Number(f.qty) || 0),
+    place: String(f.place || (out[0] && out[0].name) || "냉장")
+  }));
+  /* 목록에 없는 보관 위치가 데이터에 있으면 그대로 살려둔다 */
+  foods.forEach(f => { if (!seen.has(f.place)) { seen.add(f.place); out.push({ name: f.place, color: "" }); } });
+  out.forEach((p, i) => { if (!p.color) p.color = PLACE_COLORS[i % PLACE_COLORS.length]; });
+
+  return {
+    foods,
+    todos: (Array.isArray(x.todos) ? x.todos : []).map(t => ({
+      id: t.id || uid(), text: String(t.text || ""), done: !!t.done, bg: t.bg || ""
+    })),
+    settings: {
+      phone: s.phone || "",
+      low: Math.max(0, Number(s.low) || 2),
+      places: out
+    },
+    sent: Array.isArray(x.sent) ? x.sent.slice(0, 5) : []
+  };
+}
+
+async function init() {
+  let raw = store.get(KEY) || store.get(OLD_KEY);
+  if (raw) {
+    try { db = normalize(JSON.parse(raw)); } catch (e) { db = normalize(DEFAULT_DATA); }
+  } else {
+    try {
+      const r = await fetch("data.json", { cache: "no-store" });
+      db = normalize(r.ok ? await r.json() : DEFAULT_DATA);
+    } catch (e) {
+      db = normalize(DEFAULT_DATA);
+    }
+    save();
+  }
+
+  const d = new Date();
+  $("today").textContent = `${d.getFullYear()}.${p2(d.getMonth() + 1)}.${p2(d.getDate())} ${"일월화수목금토"[d.getDay()]}요일`;
+  $("phone").value = db.settings.phone;
+  $("lowLimit").value = db.settings.low;
+  $("lowHint").textContent = `부족 기준 ${db.settings.low}개 이하`;
+
+  if (!store.ok) {
+    $("storeNote").hidden = false;
+    $("storeNote").textContent = "이 화면에서는 저장이 임시로 동작합니다. 파일을 휴대폰이나 서버에서 열면 브라우저에 계속 저장됩니다.";
+  }
+
+  renderFilters(); renderFood(); renderTodo(); refillMsg(); renderSent();
+  firstPaint = false;
+}
+const p2 = n => String(n).padStart(2, "0");
+const save = () => store.set(KEY, JSON.stringify(db));
+
+/* ── 냉장고 ───────────────────────────── */
+const isLow = f => f.qty <= db.settings.low;
+const lowItems = () => db.foods.filter(isLow).sort((a, b) => a.qty - b.qty);
+
+function stats() {
+  $("sKinds").innerHTML = db.foods.length + "<i>종</i>";
+  $("sQty").innerHTML = db.foods.reduce((a, f) => a + f.qty, 0) + "<i>개</i>";
+  $("sLow").innerHTML = lowItems().length + "<i>종</i>";
+}
+
+function visibleFoods() {
+  const q = $("q").value.trim().toLowerCase();
+  return db.foods.filter(f => {
+    if (q && !f.name.toLowerCase().includes(q)) return false;
+    if (filter === "low") return isLow(f);
+    if (filter !== "all") return f.place === filter;
+    return true;
+  });
+}
+
+function renderFood() {
+  stats();
+  const list = visibleFoods();
+  if (!list.length) {
+    const q = $("q").value.trim();
+    $("foodList").innerHTML = `<div class="empty">${
+      db.foods.length === 0 ? "등록한 상품이 없습니다.<br>아래 ‘상품 추가’로 시작하세요."
+      : q ? `‘${esc(q)}’에 맞는 상품이 없습니다.`
+      : filter === "low" ? "부족한 상품이 없습니다. 잘 채워져 있어요."
+      : `‘${filter}’에 보관 중인 상품이 없습니다.`}</div>`;
+    return;
+  }
+  $("foodList").innerHTML = list.map((f, i) => `
+    <article class="row${firstPaint ? " in" : ""}" data-id="${f.id}" style="--i:${i}">
+      <div class="track" aria-hidden="true">
+        <span class="hint hint--plus"><b data-d>+1</b>채움</span>
+        <span class="hint hint--minus">사용<b data-d>−1</b></span>
+      </div>
+      <div class="card" style="--zone:${zoneOf(f.place)}">
+        <button class="main" data-open="${f.id}" aria-label="${esc(f.name)} 수정 · 좌우 방향키로 수량 조절">
+          <span class="name">${esc(f.name)}</span>
+          <span class="meta">${f.place}<span class="mono">${f.qty}개</span>${tagOf(f)}</span>
+        </button>
+        <div class="stepper">
+          <button data-step="-1" aria-label="${esc(f.name)} 1개 줄이기" ${f.qty === 0 ? "disabled" : ""}>−</button>
+          <output class="qty mono">${f.qty}</output>
+          <button data-step="1" aria-label="${esc(f.name)} 1개 늘리기">+</button>
+        </div>
+        <button class="icon more" data-open="${f.id}" aria-label="${esc(f.name)} 수정 · 삭제">⋯</button>
+      </div>
+    </article>`).join("");
+}
+const tagOf = f => f.qty === 0 ? '<span class="tag tag--out">품절</span>' : (isLow(f) ? '<span class="tag tag--low">부족</span>' : "");
+
+/* 목록 전체를 다시 그리지 않고 한 줄만 갱신 — 스와이프 애니메이션이 끊기지 않도록 */
+function patchRow(id, dir) {
+  const f = db.foods.find(v => v.id === id);
+  const row = $("foodList").querySelector(`.row[data-id="${id}"]`);
+  if (!f || !row) return;
+  const out = row.querySelector(".qty");
+  out.textContent = f.qty;
+  out.classList.remove("up", "down");
+  void out.offsetWidth;
+  if (dir) out.classList.add(dir > 0 ? "up" : "down");
+  row.querySelector(".meta").innerHTML = `${f.place}<span class="mono">${f.qty}개</span>${tagOf(f)}`;
+  row.querySelector('[data-step="-1"]').disabled = f.qty === 0;
+}
+
+function change(id, d) {
+  const f = db.foods.find(v => v.id === id);
+  if (!f || !d) return;
+  const next = Math.max(0, f.qty + d);
+  if (next === f.qty) return;
+  f.qty = next;
+  save();
+  patchRow(id, d);
+  stats();
+  if (tpl !== "custom") refillMsg();
+}
+
+/* ── 스와이프: 오른쪽 = 채움(+), 왼쪽 = 사용(−) ── */
+const STEP_1 = 44, STEP_N = 40, MAX_STEP = 9, LIMIT = 170;
+let drag = null;
+
+function stepsFor(dx) {
+  const a = Math.abs(dx);
+  if (a < STEP_1) return 0;
+  return Math.min(MAX_STEP, 1 + Math.floor((a - STEP_1) / STEP_N));
+}
+function rubber(dx) {
+  const a = Math.abs(dx);
+  return a <= LIMIT ? dx : Math.sign(dx) * (LIMIT + (a - LIMIT) * 0.22);
+}
+function paint(row, dx, steps) {
+  row.classList.toggle("dir-plus", dx > 0);
+  row.classList.toggle("dir-minus", dx < 0);
+  const n = Math.max(1, steps);
+  row.querySelector(".hint--plus [data-d]").textContent = "+" + n;
+  row.querySelector(".hint--minus [data-d]").textContent = "−" + n;
+}
+
+$("foodList").addEventListener("pointerdown", e => {
+  if (e.button > 0 || e.target.closest(".stepper, .more")) return;
+  const card = e.target.closest(".card");
+  if (!card) return;
+  delete card.dataset.skip;
+  drag = { card, row: card.closest(".row"), id: card.closest(".row").dataset.id, x: e.clientX, y: e.clientY, steps: 0, on: false, pid: e.pointerId };
+  card.style.transition = "none";
+});
+
+window.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.pid) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.on) {
+    if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) return;
+    drag.on = true;
+    drag.row.classList.add("is-drag");
+    try { drag.card.setPointerCapture(e.pointerId); } catch (err) {}
+  }
+  if (e.cancelable) e.preventDefault();
+  drag.dx = dx;
+  drag.card.style.transform = `translate3d(${rubber(dx)}px,0,0)`;
+  const s = stepsFor(dx);
+  if (s !== drag.steps) { drag.steps = s; if (s) buzz(7); }
+  paint(drag.row, dx, s);
+}, { passive: false });
+
+function endDrag() {
+  if (!drag) return;
+  const { card, row, id, steps, dx } = drag;
+  card.style.transition = "transform .26s cubic-bezier(.2,.8,.2,1)";
+  card.style.transform = "";
+  row.classList.remove("is-drag", "dir-plus", "dir-minus");
+  if (drag.on) card.dataset.skip = "1";
+  drag = null;
+  if (steps > 0) {
+    const d = Math.sign(dx) * steps;
+    const f = db.foods.find(v => v.id === id);
+    const applied = f ? Math.max(0, f.qty + d) - f.qty : 0;
+    change(id, d);
+    if (applied) { buzz(14); toast(`${f.name} ${applied > 0 ? "+" : ""}${applied}개 → ${f.qty}개`); }
+    else toast(`${f ? f.name : "상품"}은 이미 0개입니다`);
+  }
+}
+window.addEventListener("pointerup", endDrag);
+window.addEventListener("pointercancel", endDrag);
+
+$("foodList").addEventListener("click", e => {
+  const card = e.target.closest(".card");
+  if (card && card.dataset.skip) { delete card.dataset.skip; return; }
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.step) change(b.closest(".row").dataset.id, Number(b.dataset.step));
+  else if (b.dataset.open) openFood(b.dataset.open);
+});
+
+$("foodList").addEventListener("keydown", e => {
+  const b = e.target.closest(".main");
+  if (!b) return;
+  const id = b.closest(".row").dataset.id;
+  if (e.key === "ArrowRight") { e.preventDefault(); change(id, 1); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); change(id, -1); }
+});
+
+/* ── 할일 ─────────────────────────────── */
+function renderTodo() {
+  if (!db.todos.length) {
+    $("todoList").innerHTML = `<div class="empty">할일이 없습니다.<br>아래 ‘할일 추가’를 눌러 적어두세요.</div>`;
+    return;
+  }
+  $("todoList").innerHTML = db.todos.map(t => `
+    <div class="todo${t.done ? " done" : ""}${t.bg ? " has-bg" : ""}" data-id="${t.id}" style="${esc(t.bg || "")}">
+      <button class="check" data-t="toggle" aria-label="${t.done ? "완료 취소" : "완료 표시"}">${t.done ? "✓" : ""}</button>
+      <button class="text" data-t="edit">${esc(t.text)}</button>
+      <button class="icon" data-t="color" aria-label="배경색 고르기">◐</button>
+      <button class="icon" data-t="del" aria-label="삭제">✕</button>
+    </div>`).join("");
+}
+
+$("todoList").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  const id = b.closest(".todo").dataset.id;
+  const t = db.todos.find(v => v.id === id);
+  if (!t) return;
+  if (b.dataset.t === "toggle") { t.done = !t.done; save(); renderTodo(); if (tpl !== "custom") refillMsg(); }
+  if (b.dataset.t === "color") openColor(t);
+  if (b.dataset.t === "edit") openTodo(t);
+  if (b.dataset.t === "del") { db.todos = db.todos.filter(v => v.id !== id); save(); renderTodo(); toast("할일을 삭제했습니다"); if (tpl !== "custom") refillMsg(); }
+});
+
+$("resetColors").onclick = () => { db.todos.forEach(t => t.bg = ""); save(); renderTodo(); };
+$("clearDone").onclick = () => {
+  const n = db.todos.filter(t => t.done).length;
+  if (!n) return toast("완료한 할일이 없습니다");
+  db.todos = db.todos.filter(t => !t.done); save(); renderTodo(); toast(`${n}개를 삭제했습니다`);
+};
+
+/* ── 문자 ─────────────────────────────── */
+function smsBytes(s) {
+  let n = 0;
+  for (const ch of s) { const c = ch.codePointAt(0); n += c < 128 ? 1 : c <= 0xffff ? 2 : 4; }
+  return n;
+}
+function buildMsg(kind) {
+  const d = new Date(), day = `${p2(d.getMonth() + 1)}/${p2(d.getDate())}`;
+  if (kind === "shop") {
+    const items = lowItems();
+    if (!items.length) return `[냉장고 ${day}]\n부족한 상품이 없습니다.`;
+    return `[장보기 ${day}]\n` + items.map(f => `- ${f.name} ${f.qty}개`).join("\n");
+  }
+  if (kind === "stock") {
+    if (!db.foods.length) return `[냉장고 ${day}]\n등록된 상품이 없습니다.`;
+    return `[재고 ${day}]\n` + placeNames().filter(p => db.foods.some(f => f.place === p))
+      .map(p => `${p}: ` + db.foods.filter(f => f.place === p).map(f => `${f.name} ${f.qty}`).join(", ")).join("\n");
+  }
+  if (kind === "todo") {
+    const t = db.todos.filter(x => !x.done);
+    if (!t.length) return `[할일 ${day}]\n남은 할일이 없습니다.`;
+    return `[할일 ${day}]\n` + t.map(x => `- ${x.text}`).join("\n");
+  }
+  return $("msg").value;
+}
+function refillMsg() {
+  if (tpl !== "custom") $("msg").value = buildMsg(tpl);
+  updatePreview();
+}
+function updatePreview() {
+  const body = $("msg").value, bytes = smsBytes(body), phone = $("phone").value.trim();
+  const kind = bytes <= 90 ? "단문(SMS)" : bytes <= 2000 ? "장문(LMS)" : "2000바이트 초과";
+  const c = $("counter");
+  c.classList.toggle("over", bytes > 2000);
+  c.children[0].textContent = `${[...body].length}자 · ${bytes}바이트`;
+  c.children[1].textContent = kind;
+  $("pvTo").textContent = phone ? `받는 사람 ${phone}` : "받는 사람 없음";
+  $("pvKind").textContent = kind;
+  $("pvBody").textContent = body || "보낼 내용이 비어 있습니다";
+  const d = new Date();
+  $("pvTime").textContent = `${d.getHours() < 12 ? "오전" : "오후"} ${p2(d.getHours() % 12 || 12)}:${p2(d.getMinutes())}`;
+}
+
+$("msg").addEventListener("input", () => {
+  if (tpl !== "custom") {
+    tpl = "custom";
+    $("tpl").querySelectorAll(".chip").forEach(c => c.classList.toggle("is-on", c.dataset.tpl === "custom"));
+  }
+  updatePreview();
+});
+$("tpl").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  tpl = b.dataset.tpl;
+  $("tpl").querySelectorAll(".chip").forEach(c => c.classList.toggle("is-on", c === b));
+  if (tpl === "custom") { $("msg").focus(); updatePreview(); } else refillMsg();
+});
+$("phone").addEventListener("input", () => { db.settings.phone = $("phone").value.trim(); save(); updatePreview(); });
+$("lowLimit").addEventListener("input", () => {
+  db.settings.low = Math.max(0, Number($("lowLimit").value) || 0);
+  $("lowHint").textContent = `부족 기준 ${db.settings.low}개 이하`;
+  save(); renderFood(); if (tpl !== "custom") refillMsg();
+});
+
+/* 아이폰 메시지 앱: sms:번호&body=내용 (여러 명은 sms:/open?addresses=...)
+   안드로이드: sms:번호?body=내용 */
+function smsHref(numbers, body) {
+  const b = encodeURIComponent(body);
+  if (isIOS) {
+    return numbers.length > 1
+      ? `sms:/open?addresses=${numbers.join(",")}&body=${b}`
+      : `sms:${numbers[0]}&body=${b}`;
+  }
+  return `sms:${numbers.join(",")}?body=${b}`;
+}
+function sendSms() {
+  const numbers = $("phone").value.split(/[,;]/).map(s => s.replace(/[^0-9+]/g, "")).filter(Boolean);
+  const body = $("msg").value;
+  if (!numbers.length) { $("phone").focus(); return toast("받는 사람 번호를 입력하세요"); }
+  if (!body.trim()) { $("msg").focus(); return toast("보낼 내용을 입력하세요"); }
+
+  /* iOS Safari는 location 변경보다 링크 클릭이 안정적이다 */
+  const a = document.createElement("a");
+  a.href = smsHref(numbers, body);
+  a.style.display = "none";
+  document.body.appendChild(a);
+  try { a.click(); } catch (e) { try { window.location.href = a.href; } catch (err) {} }
+  setTimeout(() => a.remove(), 500);
+
+  db.sent.unshift({ t: Date.now(), to: $("phone").value.trim(), body });
+  db.sent = db.sent.slice(0, 5);
+  save(); renderSent();
+  setTimeout(() => toast(isIOS ? "메시지 앱에서 보내기를 눌러 주세요" : "문자 앱에서 보내기를 눌러 주세요"), 900);
+}
+function renderSent() {
+  $("sentBox").hidden = !db.sent.length;
+  $("sentList").innerHTML = db.sent.map(s => {
+    const d = new Date(s.t);
+    return `<div class="sent"><span class="sent__to mono">${p2(d.getMonth() + 1)}/${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}</span><span class="sent__body">${esc(s.body.replace(/\n/g, " "))}</span></div>`;
+  }).join("");
+}
+$("copyBtn").onclick = async () => {
+  const t = $("msg").value;
+  try { await navigator.clipboard.writeText(t); toast("내용을 복사했습니다"); }
+  catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast("내용을 복사했습니다"); } catch (err) { toast("복사할 수 없는 환경입니다"); }
+    ta.remove();
+  }
+};
+$("shareBtn").onclick = async () => {
+  if (!navigator.share) return toast("이 브라우저는 공유를 지원하지 않습니다");
+  try { await navigator.share({ text: $("msg").value }); } catch (e) {}
+};
+
+/*  서버 자동 발송을 붙일 자리.
+    솔라피·알리고·NHN Cloud 같은 문자 API는 인증키를 브라우저에 두면 안 되므로
+    본인 서버(또는 서버리스 함수)에 아래 엔드포인트를 만들고 그쪽에서 API를 호출하세요.
+
+async function sendViaApi(to, text){
+  const r = await fetch("/api/sms", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ to, text })
+  });
+  if(!r.ok) throw new Error("발송 실패");
+  return r.json();
+}
+*/
+
+/* ── 탭 ───────────────────────────────── */
+const VIEWS = { fridge: "viewFridge", todo: "viewTodo", sms: "viewSms" };
+const LABEL = { fridge: "+ 상품 추가", todo: "+ 할일 추가", sms: isIOS ? "메시지 앱으로 보내기" : "문자 앱으로 보내기" };
+function setTab(name) {
+  tab = name;
+  const i = Object.keys(VIEWS).indexOf(name);
+  $("thumb").style.transform = `translateX(${i * 100}%)`;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("is-on", t.dataset.tab === name));
+  Object.entries(VIEWS).forEach(([k, v]) => $(v).hidden = k !== name);
+  $("fab").textContent = LABEL[name];
+  if (name === "sms") refillMsg();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab");
+  if (b) setTab(b.dataset.tab);
+});
+document.querySelectorAll("[data-jump]").forEach(b => b.onclick = () => {
+  setTab("fridge");
+  setFilter(b.dataset.jump === "low" ? "low" : "all");
+});
+function renderFilters() {
+  if (filter !== "all" && filter !== "low" && !placeNames().includes(filter)) filter = "all";
+  $("filters").innerHTML =
+    `<button class="chip${filter === "all" ? " is-on" : ""}" data-filter="all">전체</button>` +
+    places().map(p => `<button class="chip${filter === p.name ? " is-on" : ""}" data-filter="${esc(p.name)}" style="--zone:${p.color}"><i class="dot"></i>${esc(p.name)}</button>`).join("") +
+    `<button class="chip${filter === "low" ? " is-on" : ""}" data-filter="low">부족만</button>` +
+    `<button class="chip" data-manage="1">위치 편집</button>`;
+}
+function setFilter(f) {
+  filter = f;
+  $("filters").querySelectorAll(".chip").forEach(c => c.classList.toggle("is-on", c.dataset.filter === f));
+  renderFood();
+}
+$("filters").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  if (b.dataset.manage) openPlaces();
+  else setFilter(b.dataset.filter);
+});
+$("q").addEventListener("input", renderFood);
+$("fab").onclick = () => tab === "fridge" ? openFood() : tab === "todo" ? openTodo() : sendSms();
+
+/* ── 시트 ─────────────────────────────── */
+function openSheet(title, html, onReady) {
+  $("sheetTitle").textContent = title;
+  $("sheetBody").innerHTML = html;
+  $("sheet").hidden = false;
+  requestAnimationFrame(() => $("sheet").classList.add("is-open"));
+  onReady && onReady();
+}
+function closeSheet() {
+  $("sheet").classList.remove("is-open");
+  setTimeout(() => { $("sheet").hidden = true; $("sheetBody").innerHTML = ""; }, 260);
+}
+$("sheet").addEventListener("click", e => { if (e.target.dataset.close !== undefined) closeSheet(); });
+window.addEventListener("keydown", e => { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+
+/* ── 보관 위치(냉장고 이름) ─────────────── */
+function addPlace(name) {
+  name = String(name).trim().slice(0, 12);
+  if (!name) return false;
+  if (placeNames().includes(name)) { toast(`‘${name}’은(는) 이미 있습니다`); return false; }
+  places().push({ name, color: freeColor() });
+  save();
+  return true;
+}
+let undoBin = null;
+function removePlace(name) {
+  if (places().length <= 1) return toast("보관 위치는 최소 1개가 필요합니다");
+  const used = db.foods.filter(f => f.place === name);
+  const qty = used.reduce((a, f) => a + f.qty, 0);
+  const msg = used.length
+    ? `‘${name}’을(를) 지우면 그 안의 상품 ${used.length}종(${qty}개)도 함께 삭제됩니다.\n계속할까요?`
+    : `‘${name}’을(를) 삭제할까요?`;
+  if (!confirm(msg)) return;
+
+  undoBin = { index: places().findIndex(p => p.name === name), place: places().find(p => p.name === name), foods: db.foods.slice() };
+  db.foods = db.foods.filter(f => f.place !== name);
+  db.settings.places = places().filter(p => p.name !== name);
+  if (filter === name) filter = "all";
+  save(); renderFilters(); renderFood(); renderPlaces();
+  if (tpl !== "custom") refillMsg();
+  toast(used.length ? `‘${name}’과 상품 ${used.length}종을 삭제했습니다` : `‘${name}’을(를) 삭제했습니다`, "되돌리기", undoPlace);
+}
+function undoPlace() {
+  if (!undoBin) return;
+  places().splice(undoBin.index, 0, undoBin.place);
+  db.foods = undoBin.foods;
+  undoBin = null;
+  save(); renderFilters(); renderFood(); renderPlaces();
+  if (tpl !== "custom") refillMsg();
+  toast("되돌렸습니다");
+}
+function renderPlaces() {
+  const el = $("plcList");
+  if (!el) return;
+  el.innerHTML = places().map(p => {
+    const items = db.foods.filter(f => f.place === p.name);
+    const qty = items.reduce((a, f) => a + f.qty, 0);
+    return `<div class="plc" style="--zone:${p.color}">
+      <span class="plc__dot"></span>
+      <span class="plc__name">${esc(p.name)}</span>
+      <span class="plc__n mono">${items.length}종 · ${qty}개</span>
+      <button class="icon" data-color="${esc(p.name)}" aria-label="${esc(p.name)} 색상 고르기">◐</button>
+      <button class="icon" data-del="${esc(p.name)}" aria-label="${esc(p.name)} 삭제">✕</button>
+    </div>`;
+  }).join("");
+}
+function openPlaces() {
+  openSheet("보관 위치", `
+    <div id="plcList"></div>
+    <div class="field" style="margin-top:14px">
+      <label for="plcName">새 위치 추가</label>
       <div class="field-row">
-        <input id="fQty" type="number" inputmode="numeric" min="0" value="1">
-        <input id="fUnit" list="unitList" placeholder="개">
-        <datalist id="unitList"></datalist>
+        <input id="plcName" placeholder="예: 김치냉장고" maxlength="12">
+        <button class="btn btn--ghost" id="plcAdd">추가</button>
       </div>
     </div>
-    <div class="field">
-      <label for="fSafety">안전재고 수량 <span style="font-weight:400">(이 수량 이하이면 부족으로 표시)</span></label>
-      <input id="fSafety" type="number" inputmode="numeric" min="0" value="2">
+    <div class="note">✕ 를 누르면 그 위치에 들어 있는 <b>상품까지 모두 삭제</b>됩니다. 지운 직후 뜨는 ‘되돌리기’로 복구할 수 있습니다.</div>
+  `, () => {
+    renderPlaces();
+    const add = () => {
+      const v = $("plcName").value;
+      if (!addPlace(v)) return;
+      $("plcName").value = "";
+      renderFilters(); renderPlaces(); renderFood();
+      toast(`‘${v.trim()}’을(를) 추가했습니다`);
+    };
+    $("plcAdd").onclick = add;
+    $("plcName").onkeydown = e => { if (e.key === "Enter") add(); };
+    $("plcList").onclick = e => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.del) removePlace(b.dataset.del);
+      if (b.dataset.color) openPlaceColor(b.dataset.color);
+    };
+  });
+}
+
+/* 위치 색상 직접 고르기 */
+function placeColorGrid(current) {
+  const known = PLACE_COLORS.includes(current);
+  return PLACE_COLORS.map(c => `<button class="swatch ${current === c ? "is-on" : ""}" data-c="${c}" style="background:${c}" aria-label="색상"></button>`).join("")
+    + `<label class="swatch swatch--pick ${known ? "" : "is-on"}" title="직접 고르기">
+         <input type="color" id="pickPlace" value="${known ? current : (current || "#2f86b4")}" aria-label="색상 직접 고르기">
+       </label>`;
+}
+function openPlaceColor(name) {
+  const p = places().find(v => v.name === name);
+  if (!p) return;
+  openSheet(`‘${name}’ 색상`, `
+    <div class="swatches" id="pcGrid">${placeColorGrid(p.color)}</div>
+    <button class="btn btn--primary" id="pcDone" style="margin-top:16px">완료</button>
+  `, () => {
+    const el = $("pcGrid");
+    const apply = (c, on) => {
+      p.color = c;
+      el.querySelectorAll(".swatch").forEach(x => x.classList.toggle("is-on", x === on));
+      save(); renderFilters(); renderFood();
+    };
+    el.onclick = e => {
+      const b = e.target.closest(".swatch");
+      if (!b || b.classList.contains("swatch--pick")) return;
+      apply(b.dataset.c, b);
+    };
+    const pick = $("pickPlace");
+    pick.oninput = () => {
+      const box = pick.closest(".swatch");
+      box.style.background = pick.value;
+      apply(pick.value, box);
+    };
+    $("pcDone").onclick = openPlaces;
+  });
+}
+
+function placeSeg(current) {
+  return places().map(p => `<button data-p="${esc(p.name)}" style="--zone:${p.color}" class="${current === p.name ? "is-on" : ""}">${esc(p.name)}</button>`).join("")
+    + `<button class="add" data-add="1">+ 위치</button>`;
+}
+
+function openFood(id) {
+  const f = id ? db.foods.find(v => v.id === id) : null;
+  let place = f ? f.place : (placeNames()[0] || "냉장");
+  openSheet(f ? "상품 수정" : "상품 추가", `
+    <div class="field field-row">
+      <div><label for="fName">상품명</label><input id="fName" placeholder="예: 계란" value="${f ? esc(f.name) : ""}"></div>
+      <div><label for="fQty">수량</label><input id="fQty" type="number" min="0" inputmode="numeric" value="${f ? f.qty : 1}"></div>
     </div>
     <div class="field">
       <label>보관 위치</label>
-      <div class="seg" id="fPlaceSeg"></div>
+      <div class="seg" id="fPlace">${placeSeg(place)}</div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn--danger" id="btnDeleteFood" type="button" hidden>삭제</button>
-      <button class="btn btn--primary" id="btnSaveFood" type="button">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- 보관 위치 추가/수정 시트 -->
-<div class="sheet" id="sheetPlace" hidden>
-  <div class="scrim" data-close></div>
-  <div class="panel">
-    <div class="grip"></div>
-    <h2 id="placeSheetTitle">보관 위치 추가</h2>
-    <div class="field">
-      <label for="pName">위치 이름</label>
-      <input id="pName" placeholder="예: 팬트리">
-    </div>
-    <div class="field">
-      <label>색상</label>
-      <div class="swatches" id="pSwatches"></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn--ghost" data-close type="button">취소</button>
-      <button class="btn btn--primary" id="btnSavePlace" type="button">추가</button>
-    </div>
-  </div>
-</div>
-
-<!-- 보관 위치 관리(순서/수정/삭제) 시트 -->
-<div class="sheet" id="sheetPlaces" hidden>
-  <div class="scrim" data-close></div>
-  <div class="panel">
-    <div class="grip"></div>
-    <h2>보관 위치 관리</h2>
-    <div id="placesList"></div>
-    <div class="btn-row">
-      <button class="btn btn--ghost" data-close type="button">닫기</button>
-      <button class="btn btn--primary" id="btnAddPlaceFromList" type="button">+ 위치 추가</button>
-    </div>
-  </div>
-</div>
-
-<!-- 할일 추가/수정 시트 -->
-<div class="sheet" id="sheetTodo" hidden>
-  <div class="scrim" data-close></div>
-  <div class="panel">
-    <div class="grip"></div>
-    <h2 id="todoSheetTitle">할일 추가</h2>
-    <div class="field">
-      <label for="tText">내용</label>
-      <input id="tText" placeholder="예: 계란 주문하기">
-    </div>
-    <div class="btn-row">
-      <button class="btn btn--danger" id="btnDeleteTodo" type="button" hidden>삭제</button>
-      <button class="btn btn--primary" id="btnSaveTodo" type="button">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- 설정 시트 -->
-<div class="sheet" id="sheetSettings" hidden>
-  <div class="scrim" data-close></div>
-  <div class="panel">
-    <div class="grip"></div>
-    <h2>설정</h2>
-    <div class="field">
-      <label for="sPhone">문자 받는 사람 번호</label>
-      <input id="sPhone" placeholder="010-0000-0000" inputmode="tel">
-    </div>
-    <div class="field">
-      <label for="sLow">기본 안전재고 수량 <span style="font-weight:400">(상품별 설정이 없을 때 사용)</span></label>
-      <input id="sLow" type="number" inputmode="numeric" min="0" value="2">
-    </div>
-    <div class="btn-row">
-      <button class="btn btn--ghost" id="btnCloseSettings" type="button">닫기</button>
-      <button class="btn btn--primary" id="btnSaveSettings" type="button">저장</button>
-    </div>
-
-    <div class="box-title" style="margin-top:18px">데이터 백업</div>
-    <div class="btn-row" style="margin-top:0">
-      <button class="btn btn--ghost" id="btnExport" type="button">백업 내보내기</button>
-      <button class="btn btn--ghost" id="btnImport" type="button">백업 불러오기</button>
-    </div>
-    <input type="file" id="fileImport" accept="application/json" hidden>
-    <div class="note">내보내기를 누르면 현재 데이터가 JSON 파일로 저장됩니다. 불러오기로 그 파일을 선택하면 현재 데이터를 덮어씁니다.</div>
-
-    <div class="box-title" style="margin-top:18px">기본 데이터 다시 불러오기</div>
-    <button class="btn btn--danger" id="btnReloadSeed" type="button" style="width:100%">data.json으로 초기화</button>
-    <div class="note">이 브라우저에 저장된 현재 목록을 지우고, 서버의 data.json 내용으로 다시 불러옵니다. 되돌릴 수 없으니 먼저 백업 내보내기를 권장합니다.</div>
-  </div>
-</div>
-
-<div class="toast" id="toast"><span id="toastMsg"></span></div>
-
-<script>
-(function(){
-"use strict";
-
-var STORAGE_KEY = "food_app_v2";
-var TAB_ORDER = ["fridge","todo","sms"];
-var SMS_LIMIT = 80;
-
-var db = { foods: [], todos: [], settings: { phone:"", low:2, places:[], units:[] }, sent: [] };
-var state = { tab:"fridge", filter:"__all__", editFoodId:null, editTodoId:null };
-
-function $(id){ return document.getElementById(id); }
-function esc(s){
-  return String(s==null?"":s).replace(/[&<>"']/g, function(m){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
-  });
-}
-function uid(){ return Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8); }
-
-function safetyOf(f){
-  var v = Number(f.safety);
-  if(!isNaN(v) && f.safety!==""&&f.safety!=null) return v;
-  return Number(db.settings.low)||0;
-}
-function isOut(f){ return Number(f.qty)<=0; }
-function isLow(f){ return Number(f.qty) <= safetyOf(f); }
-
-/* ── persistence ─────────────────────────── */
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
-
-function normalize(x){
-  var out = {
-    foods: Array.isArray(x.foods)?x.foods:[],
-    todos: Array.isArray(x.todos)?x.todos:[],
-    settings: Object.assign({phone:"",low:2,places:[],units:[]}, x.settings||{}),
-    sent: Array.isArray(x.sent)?x.sent:[]
-  };
-  out.foods = out.foods.map(function(f){
-    return {
-      id: f.id || uid(),
-      name: f.name || "",
-      qty: Number(f.qty)||0,
-      place: f.place || (out.settings.places[0]&&out.settings.places[0].name) || "",
-      unit: f.unit || "개",
-      safety: (f.safety===""||f.safety==null) ? "" : Number(f.safety)
+    <button class="btn btn--primary" id="fSave">${f ? "저장" : "추가"}</button>
+    ${f ? '<button class="btn btn--danger" id="fDel" style="margin-top:8px">삭제</button>' : ""}
+  `, () => {
+    $("fPlace").onclick = e => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.add) {
+        const name = prompt("새 보관 위치 이름 (예: 김치냉장고)");
+        if (!name || !name.trim()) return;
+        if (!addPlace(name.trim())) return;
+        place = name.trim();
+        $("fPlace").innerHTML = placeSeg(place);
+        renderFilters();
+        return;
+      }
+      place = b.dataset.p;
+      $("fPlace").querySelectorAll("button").forEach(x => x.classList.toggle("is-on", x === b));
+    };
+    if (!f) setTimeout(() => $("fName").focus(), 320);
+    $("fName").onkeydown = e => { if (e.key === "Enter") $("fSave").click(); };
+    $("fSave").onclick = () => {
+      const name = $("fName").value.trim();
+      const qty = Math.max(0, parseInt($("fQty").value, 10) || 0);
+      if (!name) { $("fName").focus(); return toast("상품명을 입력하세요"); }
+      if (f) { f.name = name; f.qty = qty; f.place = place; }
+      else {
+        const same = db.foods.find(v => v.name === name && v.place === place);
+        if (same) same.qty += qty;
+        else db.foods.unshift({ id: uid(), name, qty, place });
+      }
+      save(); closeSheet(); renderFood(); if (tpl !== "custom") refillMsg();
+      toast(f ? "저장했습니다" : `${name}을(를) 추가했습니다`);
+    };
+    if (f) $("fDel").onclick = () => {
+      if (!confirm(`‘${f.name}’을(를) 삭제할까요?`)) return;
+      db.foods = db.foods.filter(v => v.id !== f.id);
+      save(); closeSheet(); renderFood(); if (tpl !== "custom") refillMsg();
+      toast(`${f.name}을(를) 삭제했습니다`);
     };
   });
-  out.todos = out.todos.map(function(t){
-    return { id:t.id||uid(), text:t.text||"", done:!!t.done, bg:t.bg||"" };
+}
+
+function swatchGrid(current) {
+  const known = COLORS.includes(current);
+  return COLORS.map(c => `<button class="swatch ${c ? "" : "swatch--none"} ${current === c ? "is-on" : ""}" data-c="${c}" style="${c || "background:var(--surface-2)"}" aria-label="${c ? "배경색" : "색 없음"}">${c ? "" : "없음"}</button>`).join("")
+    + `<label class="swatch swatch--pick ${!known && current ? "is-on" : ""}" title="직접 고르기">
+         <input type="color" id="pickColor" value="${!known && current ? current.replace("background:", "") : "#ffd9a0"}" aria-label="배경색 직접 고르기">
+       </label>`;
+}
+function bindSwatches(el, onPick) {
+  el.onclick = e => {
+    const b = e.target.closest(".swatch");
+    if (!b || b.classList.contains("swatch--pick")) return;
+    el.querySelectorAll(".swatch").forEach(x => x.classList.toggle("is-on", x === b));
+    onPick(b.dataset.c);
+  };
+  const pick = el.querySelector("#pickColor");
+  if (pick) pick.oninput = () => {
+    const c = `background:${pick.value}`;
+    pick.closest(".swatch").style.background = pick.value;
+    el.querySelectorAll(".swatch").forEach(x => x.classList.toggle("is-on", x === pick.closest(".swatch")));
+    onPick(c);
+  };
+}
+
+/* 목록에서 색만 바꿀 때 */
+function openColor(t) {
+  openSheet("배경색", `
+    <div class="swatches" id="cBg">${swatchGrid(t.bg || "")}</div>
+    <button class="btn btn--primary" id="cDone" style="margin-top:16px">완료</button>
+  `, () => {
+    bindSwatches($("cBg"), c => { t.bg = c; save(); renderTodo(); });
+    $("cDone").onclick = closeSheet;
   });
-  if(!out.settings.places.length){
-    out.settings.places = [{name:"냉장",color:"#2f86b4"},{name:"냉동",color:"#5568d8"},{name:"실온",color:"#b8862b"}];
+}
+
+function openTodo(t) {
+  openSheet(t ? "할일 수정" : "할일 추가", `
+    <div class="field"><label for="tText">할일</label><input id="tText" placeholder="예: 계란 주문하기" value="${t ? esc(t.text) : ""}"></div>
+    <div class="field">
+      <label>배경색</label>
+      <div class="swatches" id="tBg">${swatchGrid((t && t.bg) || "")}</div>
+    </div>
+    <button class="btn btn--primary" id="tSave">${t ? "저장" : "추가"}</button>
+  `, () => {
+    let bg = t ? t.bg : "";
+    bindSwatches($("tBg"), c => { bg = c; });
+    if (!t) setTimeout(() => $("tText").focus(), 320);
+    $("tText").onkeydown = e => { if (e.key === "Enter") $("tSave").click(); };
+    $("tSave").onclick = () => {
+      const text = $("tText").value.trim();
+      if (!text) { $("tText").focus(); return toast("할일을 입력하세요"); }
+      if (t) { t.text = text; t.bg = bg; }
+      else db.todos.push({ id: uid(), text, done: false, bg });
+      save(); closeSheet(); renderTodo(); if (tpl !== "custom") refillMsg();
+    };
+  });
+}
+
+/* ── 토스트 ───────────────────────────── */
+let toastTimer;
+function toast(msg, actionLabel, onAction) {
+  const el = $("toast");
+  el.innerHTML = "";
+  const s = document.createElement("span");
+  s.textContent = msg;
+  el.appendChild(s);
+  const withBtn = !!(actionLabel && onAction);
+  if (withBtn) {
+    const b = document.createElement("button");
+    b.className = "toast__btn";
+    b.textContent = actionLabel;
+    b.onclick = () => { el.classList.remove("is-on", "has-btn"); onAction(); };
+    el.appendChild(b);
   }
-  if(!out.settings.units || !out.settings.units.length){
-    out.settings.units = ["개","봉지","팩","병","통","판","kg","g","L","ml"];
-  }
-  return out;
-}
-
-async function loadSeed(){
-  var r = await fetch("data.json",{cache:"no-store"});
-  if(!r.ok) throw new Error("data.json load failed");
-  db = normalize(await r.json());
-  save();
-}
-
-async function init(){
-  var saved = localStorage.getItem(STORAGE_KEY);
-  if(saved){
-    try{ db = normalize(JSON.parse(saved)); }
-    catch(e){ console.error(e); }
-  }else{
-    try{ await loadSeed(); }
-    catch(e){
-      console.error(e);
-      db = normalize({});
-      save();
-    }
-  }
-  setToday();
-  renderAll();
-  bind();
-}
-
-async function reloadSeed(){
-  if(!confirm("이 브라우저에 저장된 현재 데이터를 지우고 data.json 내용으로 초기화할까요?\n되돌릴 수 없습니다.")) return;
-  try{
-    await loadSeed();
-    closeSheet("sheetSettings");
-    renderAll();
-    toast("data.json으로 초기화했습니다");
-  }catch(e){
-    console.error(e);
-    toast("data.json을 불러오지 못했습니다");
-  }
-}
-
-function setToday(){
-  try{
-    var d = new Date();
-    $("today").textContent = d.toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
-  }catch(e){ $("today").textContent = ""; }
-}
-
-/* ── toast ─────────────────────────────── */
-var toastTimer=null;
-function toast(msg){
-  var el=$("toast");
-  $("toastMsg").textContent = msg;
+  el.classList.toggle("has-btn", withBtn);
   el.classList.add("is-on");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function(){ el.classList.remove("is-on"); }, 2200);
-}
-
-/* ── tabs ──────────────────────────────── */
-function setTab(tab){
-  state.tab = tab;
-  var idx = TAB_ORDER.indexOf(tab);
-  $("thumb").style.transform = "translateX(calc(" + idx + " * 100%))";
-  document.querySelectorAll(".tab").forEach(function(b){
-    b.classList.toggle("is-on", b.dataset.tab===tab);
-  });
-  $("viewFridge").hidden = tab!=="fridge";
-  $("viewTodo").hidden = tab!=="todo";
-  $("viewSms").hidden = tab!=="sms";
-  $("barFridge").hidden = tab!=="fridge";
-  $("barTodo").hidden = tab!=="todo";
-  $("barSms").hidden = tab!=="sms";
-  if(tab==="sms") renderSmsHeader();
-}
-
-/* ── render: fridge ────────────────────── */
-function renderChips(){
-  var chips = ['<button class="chip'+(state.filter==="__all__"?" is-on":"")+'" data-filter="__all__" type="button">전체</button>'];
-  db.settings.places.forEach(function(p){
-    chips.push('<button class="chip'+(state.filter===p.name?" is-on":"")+'" data-filter="'+esc(p.name)+'" style="--zone:'+esc(p.color)+'" type="button"><span class="dot"></span>'+esc(p.name)+'</button>');
-  });
-  chips.push('<button class="chip'+(state.filter==="__low__"?" is-on":"")+'" data-filter="__low__" type="button"><span class="dot" style="--zone:var(--minus)"></span>부족·품절</button>');
-  chips.push('<button class="chip" data-action="edit-places" type="button">위치 편집</button>');
-  $("chips").innerHTML = chips.join("");
-}
-
-function placeColor(name){
-  var p = db.settings.places.find(function(x){ return x.name===name; });
-  return p ? p.color : "#8a97a3";
-}
-
-function renderFoodList(){
-  var q = $("foodSearch").value.trim().toLowerCase();
-  var list = scopedFoods().filter(function(f){
-    return !q || f.name.toLowerCase().indexOf(q)!==-1;
-  });
-
-  if(!list.length){
-    $("foodList").innerHTML = '<div class="empty">표시할 상품이 없습니다.<br>우측 하단 버튼으로 상품을 추가해보세요.</div>';
-    return;
-  }
-
-  $("foodList").innerHTML = list.map(function(f,i){
-    var tag = isOut(f) ? '<span class="tag tag--out">품절</span>' : (isLow(f) ? '<span class="tag tag--low">부족</span>' : "");
-    return '<div class="row in" style="--i:'+i+'" data-id="'+f.id+'">'+
-      '<div class="track">'+
-        '<div class="hint hint--minus"><b>−</b>수량 감소</div>'+
-        '<div class="hint hint--plus">수량 증가<b>+</b></div>'+
-      '</div>'+
-      '<div class="card" style="--zone:'+esc(placeColor(f.place))+'" data-drag data-id="'+f.id+'">'+
-        '<button class="main" data-edit="'+f.id+'" type="button">'+
-          '<span class="name">'+esc(f.name)+'</span>'+
-          '<span class="meta">'+esc(f.place)+' · '+f.qty+esc(f.unit)+' · 안전재고 '+safetyOf(f)+esc(f.unit)+'↓ '+tag+'</span>'+
-        '</button>'+
-        '<div class="stepper">'+
-          '<button data-step="-1" data-id="'+f.id+'" type="button" aria-label="감소">−</button>'+
-          '<span class="qty mono" id="qty-'+f.id+'">'+f.qty+'</span>'+
-          '<button data-step="1" data-id="'+f.id+'" type="button" aria-label="증가">+</button>'+
-        '</div>'+
-        '<button class="more" data-del="'+f.id+'" type="button" aria-label="삭제">⋯</button>'+
-      '</div>'+
-    '</div>';
-  }).join("");
-}
-
-function scopedFoods(){
-  if(state.filter==="__all__") return db.foods;
-  if(state.filter==="__low__") return db.foods.filter(isLow);
-  return db.foods.filter(function(f){ return f.place===state.filter; });
-}
-
-function renderStats(){
-  var scope = scopedFoods();
-  $("sKinds").innerHTML = scope.length+"<i>종</i>";
-  var totalQty = scope.reduce(function(a,f){ return a+Number(f.qty||0); },0);
-  $("sQty").innerHTML = totalQty+"<i>개</i>";
-  $("sQtyLabel").textContent = state.filter==="__all__" ? "전체 수량" : (state.filter==="__low__" ? "부족 수량" : state.filter+" 수량");
-  var lowCount = scope.filter(isLow).length;
-  $("sLow").innerHTML = lowCount+"<i>종</i>";
-}
-
-function bumpQty(id,dir){
-  var el = $("qty-"+id);
-  if(!el) return;
-  el.classList.remove("up","down");
-  void el.offsetWidth;
-  el.classList.add(dir>0?"up":"down");
-}
-
-function changeQty(id, delta){
-  var f = db.foods.find(function(x){ return x.id===id; });
-  if(!f) return;
-  f.qty = Math.max(0, Number(f.qty)+delta);
-  save();
-  bumpQty(id, delta);
-  renderFoodList();
-  renderStats();
-}
-
-/* ── food sheet ────────────────────────── */
-function openSheet(id){ var s=$(id); s.hidden=false; requestAnimationFrame(function(){ s.classList.add("is-open"); }); }
-function closeSheet(id){ var s=$(id); s.classList.remove("is-open"); setTimeout(function(){ s.hidden=true; },300); }
-
-function fillUnitList(){
-  var units = db.settings.units.slice();
-  db.foods.forEach(function(f){ if(f.unit && units.indexOf(f.unit)===-1) units.push(f.unit); });
-  $("unitList").innerHTML = units.map(function(u){ return '<option value="'+esc(u)+'">'; }).join("");
-}
-
-function renderPlaceSeg(selected){
-  var html = db.settings.places.map(function(p){
-    return '<button type="button" class="'+(p.name===selected?"is-on":"")+'" style="--zone:'+esc(p.color)+'" data-place="'+esc(p.name)+'">'+esc(p.name)+'</button>';
-  }).join("");
-  html += '<button type="button" class="add" data-place-add>+ 추가</button>';
-  $("fPlaceSeg").innerHTML = html;
-}
-
-function openFoodSheet(id){
-  state.editFoodId = id || null;
-  fillUnitList();
-  if(id){
-    var f = db.foods.find(function(x){ return x.id===id; });
-    if(!f) return;
-    $("foodSheetTitle").textContent = "상품 수정";
-    $("fName").value = f.name;
-    $("fQty").value = f.qty;
-    $("fUnit").value = f.unit;
-    $("fSafety").value = (f.safety===""||f.safety==null) ? "" : f.safety;
-    renderPlaceSeg(f.place);
-    $("btnDeleteFood").hidden = false;
-  }else{
-    $("foodSheetTitle").textContent = "상품 추가";
-    $("fName").value = "";
-    $("fQty").value = 1;
-    $("fUnit").value = "개";
-    $("fSafety").value = db.settings.low;
-    renderPlaceSeg(db.settings.places[0] && db.settings.places[0].name);
-    $("btnDeleteFood").hidden = true;
-  }
-  openSheet("sheetFood");
-}
-
-function saveFoodFromSheet(){
-  var name = $("fName").value.trim();
-  if(!name){ toast("상품명을 입력하세요"); $("fName").focus(); return; }
-  var qty = Math.max(0, parseInt($("fQty").value,10)||0);
-  var unit = $("fUnit").value.trim() || "개";
-  var safetyRaw = $("fSafety").value;
-  var safety = safetyRaw==="" ? "" : Math.max(0, parseInt(safetyRaw,10)||0);
-  var placeBtn = $("fPlaceSeg").querySelector(".is-on");
-  var place = placeBtn ? placeBtn.dataset.place : (db.settings.places[0]&&db.settings.places[0].name)||"";
-
-  if(state.editFoodId){
-    var f = db.foods.find(function(x){ return x.id===state.editFoodId; });
-    if(f){ f.name=name; f.qty=qty; f.unit=unit; f.safety=safety; f.place=place; }
-  }else{
-    db.foods.unshift({ id:uid(), name:name, qty:qty, place:place, unit:unit, safety:safety });
-  }
-  save();
-  closeSheet("sheetFood");
-  renderAll();
-  toast("저장했습니다");
-}
-
-function deleteFood(id){
-  if(!confirm("이 상품을 삭제할까요?")) return;
-  db.foods = db.foods.filter(function(x){ return x.id!==id; });
-  save();
-  renderAll();
-  toast("삭제했습니다");
-}
-
-/* ── place sheet (add / edit) ──────────── */
-var pickedColor = "#2f86b4";
-var editingPlaceIndex = null;
-var placeSheetReturnToList = false;
-var PLACE_SWATCHES = ["#2f86b4","#5568d8","#b8862b","#2f9e6f","#c0553f","#7a5bd1","#4d8f3f","#c04f8e"];
-
-function openPlaceSheet(index, fromList){
-  editingPlaceIndex = (typeof index==="number") ? index : null;
-  placeSheetReturnToList = !!fromList;
-  if(fromList){
-    $("sheetPlaces").classList.remove("is-open");
-    $("sheetPlaces").hidden = true;
-  }
-  var existing = editingPlaceIndex!=null ? db.settings.places[editingPlaceIndex] : null;
-  $("placeSheetTitle").textContent = existing ? "보관 위치 수정" : "보관 위치 추가";
-  $("btnSavePlace").textContent = existing ? "저장" : "추가";
-  $("pName").value = existing ? existing.name : "";
-  pickedColor = existing ? existing.color : PLACE_SWATCHES[0];
-  $("pSwatches").innerHTML = PLACE_SWATCHES.map(function(c){
-    return '<button type="button" class="swatch'+(c===pickedColor?" is-on":"")+'" style="background:'+c+'" data-color="'+c+'"></button>';
-  }).join("");
-  openSheet("sheetPlace");
-}
-
-function savePlace(){
-  var name = $("pName").value.trim();
-  if(!name){ toast("위치 이름을 입력하세요"); return; }
-  var dup = db.settings.places.some(function(p,i){ return p.name===name && i!==editingPlaceIndex; });
-  if(dup){ toast("이미 있는 위치입니다"); return; }
-
-  if(editingPlaceIndex!=null){
-    var target = db.settings.places[editingPlaceIndex];
-    var oldName = target.name;
-    target.name = name;
-    target.color = pickedColor;
-    if(oldName!==name){
-      db.foods.forEach(function(f){ if(f.place===oldName) f.place=name; });
-      if(state.filter===oldName) state.filter = name;
-    }
-  }else{
-    db.settings.places.push({ name:name, color:pickedColor });
-  }
-  save();
-  closeSheet("sheetPlace");
-  renderChips();
-  renderFoodList();
-  renderStats();
-  renderPlaceSeg(name);
-  renderPlacesList();
-  toast(editingPlaceIndex!=null ? "위치를 수정했습니다" : "위치를 추가했습니다");
-  editingPlaceIndex = null;
-  if(placeSheetReturnToList){ placeSheetReturnToList=false; openSheet("sheetPlaces"); }
-}
-
-/* ── place management sheet (list/reorder/delete) ─ */
-function openPlacesSheet(){
-  renderPlacesList();
-  openSheet("sheetPlaces");
-}
-
-function renderPlacesList(){
-  var places = db.settings.places;
-  $("placesList").innerHTML = places.map(function(p,i){
-    var count = db.foods.filter(function(f){ return f.place===p.name; }).length;
-    return '<div class="plc">'+
-      '<span class="plc__dot" style="--zone:'+esc(p.color)+'"></span>'+
-      '<span class="plc__name">'+esc(p.name)+'</span>'+
-      '<span class="plc__n">'+count+'종</span>'+
-      '<span class="plc__actions">'+
-        '<button class="icon" data-move="'+i+':-1" type="button" aria-label="위로"'+(i===0?" disabled":"")+'>↑</button>'+
-        '<button class="icon" data-move="'+i+':1" type="button" aria-label="아래로"'+(i===places.length-1?" disabled":"")+'>↓</button>'+
-        '<button class="icon" data-edit-place="'+i+'" type="button" aria-label="수정">✎</button>'+
-        '<button class="icon" data-del-place="'+i+'" type="button" aria-label="삭제">🗑</button>'+
-      '</span>'+
-    '</div>';
-  }).join("");
-}
-
-function movePlace(index, dir){
-  var arr = db.settings.places;
-  var target = index+dir;
-  if(target<0 || target>=arr.length) return;
-  var tmp = arr[index];
-  arr[index] = arr[target];
-  arr[target] = tmp;
-  save();
-  renderPlacesList();
-  renderChips();
-  renderFoodList();
-}
-
-function deletePlace(index){
-  var p = db.settings.places[index];
-  if(!p) return;
-  if(db.settings.places.length<=1){ toast("최소 1개의 위치가 필요합니다"); return; }
-  var inUse = db.foods.some(function(f){ return f.place===p.name; });
-  if(inUse){ toast("이 위치를 사용하는 상품이 있어 삭제할 수 없습니다"); return; }
-  if(!confirm('"'+p.name+'" 위치를 삭제할까요?')) return;
-  db.settings.places.splice(index,1);
-  if(state.filter===p.name) state.filter = "__all__";
-  save();
-  renderPlacesList();
-  renderChips();
-  renderFoodList();
-  renderStats();
-  toast("삭제했습니다");
-}
-
-/* ── todo ──────────────────────────────── */
-var TODO_COLORS = ["","background:#fff2cc","background:#dff3ff","background:#e5f6df","background:#f2e5ff","background:#ffe3e3"];
-
-function renderTodoList(){
-  if(!db.todos.length){
-    $("todoList").innerHTML = '<div class="empty">할일이 없습니다.</div>';
-    return;
-  }
-  $("todoList").innerHTML = db.todos.map(function(t){
-    return '<div class="todo'+(t.done?" done":"")+(t.bg?" has-bg":"")+'" style="'+esc(t.bg||"")+'" data-id="'+t.id+'">'+
-      '<button class="check" data-toggle="'+t.id+'" type="button">'+(t.done?"✓":"")+'</button>'+
-      '<button class="text" data-edit-todo="'+t.id+'" type="button">'+esc(t.text)+'</button>'+
-      '<button class="icon" data-color="'+t.id+'" type="button" aria-label="색상">🎨</button>'+
-      '<button class="icon" data-del-todo="'+t.id+'" type="button" aria-label="삭제">🗑</button>'+
-    '</div>';
-  }).join("");
-}
-
-function openTodoSheet(id){
-  state.editTodoId = id||null;
-  if(id){
-    var t = db.todos.find(function(x){ return x.id===id; });
-    if(!t) return;
-    $("todoSheetTitle").textContent = "할일 수정";
-    $("tText").value = t.text;
-    $("btnDeleteTodo").hidden = false;
-  }else{
-    $("todoSheetTitle").textContent = "할일 추가";
-    $("tText").value = "";
-    $("btnDeleteTodo").hidden = true;
-  }
-  openSheet("sheetTodo");
-}
-function saveTodoFromSheet(){
-  var text = $("tText").value.trim();
-  if(!text){ toast("내용을 입력하세요"); $("tText").focus(); return; }
-  if(state.editTodoId){
-    var t = db.todos.find(function(x){ return x.id===state.editTodoId; });
-    if(t) t.text = text;
-  }else{
-    db.todos.push({ id:uid(), text:text, done:false, bg:"" });
-  }
-  save();
-  closeSheet("sheetTodo");
-  renderTodoList();
-  toast("저장했습니다");
-}
-function deleteTodo(id){
-  if(!confirm("이 할일을 삭제할까요?")) return;
-  db.todos = db.todos.filter(function(x){ return x.id!==id; });
-  save();
-  renderTodoList();
-  toast("삭제했습니다");
-}
-function toggleTodo(id){
-  var t = db.todos.find(function(x){ return x.id===id; });
-  if(!t) return;
-  t.done = !t.done;
-  save();
-  renderTodoList();
-}
-function cycleColor(id){
-  var t = db.todos.find(function(x){ return x.id===id; });
-  if(!t) return;
-  var i = Math.max(0, TODO_COLORS.indexOf(t.bg||""));
-  t.bg = TODO_COLORS[(i+1)%TODO_COLORS.length];
-  save();
-  renderTodoList();
-}
-
-/* ── sms ───────────────────────────────── */
-function renderSmsHeader(){
-  $("smsPhone").value = db.settings.phone || "";
-  updateSmsPreview();
-}
-function buildAutoMessage(){
-  var lowItems = db.foods.filter(function(f){ return isLow(f)&&!isOut(f); });
-  var outItems = db.foods.filter(isOut);
-  if(!lowItems.length && !outItems.length) return "부족하거나 품절된 상품이 없습니다.";
-  var lines = ["[냉장고 재고 알림]"];
-  if(outItems.length){
-    lines.push("품절: "+outItems.map(function(f){ return f.name; }).join(", "));
-  }
-  if(lowItems.length){
-    lines.push("부족: "+lowItems.map(function(f){ return f.name+" "+f.qty+f.unit+"(기준 "+safetyOf(f)+f.unit+")"; }).join(", "));
-  }
-  lines.push("확인 후 구매 부탁드립니다.");
-  return lines.join("\n");
-}
-function updateSmsPreview(){
-  var body = $("smsBody").value;
-  var phone = $("smsPhone").value.trim();
-  $("smsPreviewTo").textContent = phone ? phone : "받는 사람 미입력";
-  $("smsPreviewNow").textContent = new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
-  $("smsBubble").textContent = body || "미리보기가 여기에 표시됩니다.";
-  $("smsBubbleTime").textContent = "";
-  var len = body.length;
-  var counterEl = $("smsCounter");
-  counterEl.innerHTML = "<span>"+len+"자 / "+SMS_LIMIT+"자</span><span></span>";
-  counterEl.classList.toggle("over", len>SMS_LIMIT);
-  $("btnSendSms").href = "sms:"+encodeURIComponent(phone)+"?body="+encodeURIComponent(body);
-}
-function renderSentList(){
-  if(!db.sent.length){
-    $("sentList").innerHTML = '<div class="empty">보낸 기록이 없습니다.</div>';
-    return;
-  }
-  $("sentList").innerHTML = db.sent.slice().reverse().slice(0,20).map(function(s){
-    var t = new Date(s.at);
-    var when = isNaN(t.getTime()) ? "" : t.toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
-    return '<div class="sent"><span class="sent__to mono">'+esc(when)+'</span><span class="sent__body">'+esc(s.to?s.to+" · ":"")+esc(s.body)+'</span></div>';
-  }).join("");
-}
-
-/* ── settings sheet ────────────────────── */
-function openSettingsSheet(){
-  $("sPhone").value = db.settings.phone||"";
-  $("sLow").value = db.settings.low;
-  openSheet("sheetSettings");
-}
-function saveSettings(){
-  db.settings.phone = $("sPhone").value.trim();
-  db.settings.low = Math.max(0, parseInt($("sLow").value,10)||0);
-  save();
-  closeSheet("sheetSettings");
-  renderAll();
-  toast("설정을 저장했습니다");
-}
-
-/* ── backup export / import ────────────── */
-function exportBackup(){
-  var blob = new Blob([JSON.stringify(db,null,2)], {type:"application/json"});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement("a");
-  var d = new Date();
-  var stamp = d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
-  a.href = url;
-  a.download = "food-backup-"+stamp+".json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast("백업 파일을 저장했습니다");
-}
-function importBackup(file){
-  var reader = new FileReader();
-  reader.onload = function(){
-    try{
-      var parsed = JSON.parse(String(reader.result));
-      db = normalize(parsed);
-      save();
-      renderAll();
-      $("sPhone").value = db.settings.phone||"";
-      $("sLow").value = db.settings.low;
-      toast("백업 데이터를 적용했습니다");
-    }catch(e){
-      console.error(e);
-      toast("올바른 백업 파일이 아닙니다");
-    }
-  };
-  reader.readAsText(file);
-}
-
-/* ── render all ────────────────────────── */
-function renderAll(){
-  renderChips();
-  renderFoodList();
-  renderStats();
-  renderTodoList();
-  renderSentList();
-  if(state.tab==="sms") renderSmsHeader();
-}
-
-/* ── drag-to-adjust on food card ───────── */
-var suppressNextClick = false;
-function bindDrag(){
-  var startX=0, startY=0, dx=0, dragging=false, moved=false, row=null, card=null, id=null;
-  var THRESHOLD = 60, MOVE_THRESHOLD = 8;
-
-  $("foodList").addEventListener("pointerdown", function(e){
-    card = e.target.closest("[data-drag]");
-    if(!card) return;
-    if(e.target.closest(".stepper") || e.target.closest(".more")) return;
-    row = card.closest(".row");
-    id = card.dataset.id;
-    startX = e.clientX;
-    startY = e.clientY;
-    dx = 0;
-    moved = false;
-    dragging = true;
-    card.setPointerCapture(e.pointerId);
-  });
-  $("foodList").addEventListener("pointermove", function(e){
-    if(!dragging) return;
-    dx = e.clientX - startX;
-    var dy = e.clientY - startY;
-    if(!moved && Math.abs(dx) > MOVE_THRESHOLD && Math.abs(dx) > Math.abs(dy)){
-      moved = true;
-    }
-    if(!moved) return;
-    var clamped = Math.max(-90, Math.min(90, dx));
-    card.style.transform = "translateX("+clamped+"px)";
-    row.classList.add("is-drag");
-    row.classList.toggle("dir-plus", dx>0);
-    row.classList.toggle("dir-minus", dx<0);
-  });
-  function endDrag(e){
-    if(!dragging) return;
-    dragging = false;
-    card.style.transform = "";
-    row.classList.remove("is-drag","dir-plus","dir-minus");
-    if(moved){
-      suppressNextClick = true;
-      if(Math.abs(dx) >= THRESHOLD){
-        changeQty(id, dx>0 ? 1 : -1);
-      }
-    }
-    row=null; card=null; id=null; dx=0; moved=false;
-  }
-  $("foodList").addEventListener("pointerup", endDrag);
-  $("foodList").addEventListener("pointercancel", endDrag);
-}
-
-/* ── event binding ─────────────────────── */
-function bind(){
-  document.querySelectorAll(".tab").forEach(function(b){
-    b.addEventListener("click", function(){ setTab(b.dataset.tab); });
-  });
-  document.querySelectorAll(".stat").forEach(function(b){
-    b.addEventListener("click", function(){
-      setTab("fridge");
-      state.filter = b.dataset.jump==="low" ? "__low__" : "__all__";
-      renderChips();
-      renderFoodList();
-      renderStats();
-    });
-  });
-
-  $("chips").addEventListener("click", function(e){
-    var editBtn = e.target.closest('[data-action="edit-places"]');
-    if(editBtn){ openPlacesSheet(); return; }
-    var b = e.target.closest(".chip");
-    if(!b) return;
-    state.filter = b.dataset.filter;
-    renderChips();
-    renderFoodList();
-    renderStats();
-  });
-  $("foodSearch").addEventListener("input", renderFoodList);
-
-  $("foodList").addEventListener("click", function(e){
-    if(suppressNextClick){ suppressNextClick = false; e.preventDefault(); e.stopPropagation(); return; }
-    var stepBtn = e.target.closest("[data-step]");
-    if(stepBtn){ changeQty(stepBtn.dataset.id, Number(stepBtn.dataset.step)); return; }
-    var editBtn = e.target.closest("[data-edit]");
-    if(editBtn){ openFoodSheet(editBtn.dataset.edit); return; }
-    var delBtn = e.target.closest("[data-del]");
-    if(delBtn){ deleteFood(delBtn.dataset.del); return; }
-  });
-  bindDrag();
-
-  $("btnAddFood").addEventListener("click", function(){ openFoodSheet(null); });
-  $("btnSaveFood").addEventListener("click", saveFoodFromSheet);
-  $("btnDeleteFood").addEventListener("click", function(){
-    if(state.editFoodId){ closeSheet("sheetFood"); deleteFood(state.editFoodId); }
-  });
-  $("fPlaceSeg").addEventListener("click", function(e){
-    var addBtn = e.target.closest("[data-place-add]");
-    if(addBtn){ openPlaceSheet(); return; }
-    var pb = e.target.closest("[data-place]");
-    if(pb){
-      $("fPlaceSeg").querySelectorAll("button").forEach(function(b){ b.classList.remove("is-on"); });
-      pb.classList.add("is-on");
-    }
-  });
-
-  $("pSwatches").addEventListener("click", function(e){
-    var sw = e.target.closest(".swatch");
-    if(!sw) return;
-    pickedColor = sw.dataset.color;
-    $("pSwatches").querySelectorAll(".swatch").forEach(function(s){ s.classList.remove("is-on"); });
-    sw.classList.add("is-on");
-  });
-  $("btnSavePlace").addEventListener("click", savePlace);
-
-  $("btnAddPlaceFromList").addEventListener("click", function(){ openPlaceSheet(null, true); });
-  $("placesList").addEventListener("click", function(e){
-    var mv = e.target.closest("[data-move]");
-    if(mv){ var parts=mv.dataset.move.split(":"); movePlace(Number(parts[0]), Number(parts[1])); return; }
-    var ed = e.target.closest("[data-edit-place]");
-    if(ed){ openPlaceSheet(Number(ed.dataset.editPlace), true); return; }
-    var del = e.target.closest("[data-del-place]");
-    if(del){ deletePlace(Number(del.dataset.delPlace)); return; }
-  });
-
-  $("btnAddTodo").addEventListener("click", function(){ openTodoSheet(null); });
-  $("btnSaveTodo").addEventListener("click", saveTodoFromSheet);
-  $("btnDeleteTodo").addEventListener("click", function(){
-    if(state.editTodoId){ closeSheet("sheetTodo"); deleteTodo(state.editTodoId); }
-  });
-  $("todoList").addEventListener("click", function(e){
-    var tog = e.target.closest("[data-toggle]"); if(tog){ toggleTodo(tog.dataset.toggle); return; }
-    var ed = e.target.closest("[data-edit-todo]"); if(ed){ openTodoSheet(ed.dataset.editTodo); return; }
-    var col = e.target.closest("[data-color]"); if(col){ cycleColor(col.dataset.color); return; }
-    var del = e.target.closest("[data-del-todo]"); if(del){ deleteTodo(del.dataset.delTodo); return; }
-  });
-
-  $("smsPhone").addEventListener("input", function(){ db.settings.phone=$("smsPhone").value.trim(); save(); updateSmsPreview(); });
-  $("smsBody").addEventListener("input", updateSmsPreview);
-  $("btnAutoMsg").addEventListener("click", function(){ $("smsBody").value = buildAutoMessage(); updateSmsPreview(); });
-  $("btnSendSms").addEventListener("click", function(){
-    var phone = $("smsPhone").value.trim();
-    var body = $("smsBody").value.trim();
-    if(!body){ toast("보낼 내용을 입력하세요"); return; }
-    db.sent.push({ id:uid(), to:phone, body:body, at:new Date().toISOString() });
-    save();
-    renderSentList();
-  });
-  $("btnGoSms2").addEventListener("click", function(){ $("smsBody").focus(); });
-  $("btnClearSent").addEventListener("click", function(){
-    if(!db.sent.length) return;
-    if(!confirm("보낸 문자 기록을 모두 삭제할까요?")) return;
-    db.sent = [];
-    save();
-    renderSentList();
-    toast("기록을 삭제했습니다");
-  });
-
-  $("btnSettings").addEventListener("click", openSettingsSheet);
-  $("btnCloseSettings").addEventListener("click", function(){ closeSheet("sheetSettings"); });
-  $("btnSaveSettings").addEventListener("click", saveSettings);
-  $("btnExport").addEventListener("click", exportBackup);
-  $("btnImport").addEventListener("click", function(){ $("fileImport").click(); });
-  $("btnReloadSeed").addEventListener("click", reloadSeed);
-  $("fileImport").addEventListener("change", function(){
-    var file = $("fileImport").files[0];
-    if(file) importBackup(file);
-    $("fileImport").value = "";
-  });
-
-  document.querySelectorAll("[data-close]").forEach(function(b){
-    b.addEventListener("click", function(){
-      var sheet = b.closest(".sheet");
-      if(!sheet) return;
-      closeSheet(sheet.id);
-      if(sheet.id==="sheetPlace" && placeSheetReturnToList){
-        placeSheetReturnToList = false;
-        openSheet("sheetPlaces");
-      }
-    });
-  });
+  toastTimer = setTimeout(() => el.classList.remove("is-on", "has-btn"), withBtn ? 6000 : 2000);
 }
 
 init();
-})();
 </script>
 </body>
 </html>
