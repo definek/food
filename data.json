@@ -1,9 +1,19 @@
 {
   "foods": [
-    { "id": "food001", "name": "계란", "qty": 10, "place": "냉장", "unit": "개", "safety": 6 },
-    { "id": "food002", "name": "닭가슴살", "qty": 5, "place": "냉동", "unit": "팩", "safety": 3 },
-    { "id": "food003", "name": "감자", "qty": 6, "place": "실온", "unit": "개", "safety": 4 },
-    { "id": "food004", "name": "우유", "qty": 2, "place": "냉장", "unit": "개", "safety": 2 }
+    { "id": "food_kongnamul", "name": "콩나물", "qty": 1, "place": "실온", "unit": "개", "safety": "" },
+    { "id": "food_kkakdugi", "name": "깍두기", "qty": 1, "place": "실온", "unit": "개", "safety": "" },
+    { "id": "food_ssal", "name": "쌀", "qty": 1, "place": "실온", "unit": "개", "safety": "" },
+    { "id": "food_yangpa", "name": "양파", "qty": 0, "place": "실온", "unit": "개", "safety": "" },
+    { "id": "food_gamja", "name": "감자", "qty": 100, "place": "실온", "unit": "개", "safety": "" },
+    { "id": "food_paengiboseot", "name": "팽이버섯", "qty": 3, "place": "냉장", "unit": "개", "safety": "" },
+    { "id": "food_ganjangppyeojjim", "name": "간장뼈찜소스", "qty": 2, "place": "냉장", "unit": "개", "safety": "" },
+    { "id": "food_baechu", "name": "배추", "qty": 2, "place": "냉장", "unit": "개", "safety": "" },
+    { "id": "food_tteokbokki", "name": "떡볶이", "qty": 0, "place": "냉장", "unit": "개", "safety": "" },
+    { "id": "food_sujebi", "name": "수제비", "qty": 7, "place": "냉장", "unit": "개", "safety": "" },
+    { "id": "food_paprika", "name": "파프리카", "qty": 1, "place": "냉동", "unit": "개", "safety": "" },
+    { "id": "food_bbyeo", "name": "뼈", "qty": 16, "place": "냉동", "unit": "개", "safety": "" },
+    { "id": "food_naengdongnakji", "name": "냉동낙지", "qty": 50, "place": "냉동", "unit": "개", "safety": "" },
+    { "id": "food_haemulppyeojjim", "name": "해물뼈찜소스", "qty": 20, "place": "냉동", "unit": "개", "safety": "" }
   ],
   "todos": [
     { "id": "todo001", "text": "계란 주문하기", "done": false, "bg": "" },
