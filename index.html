@@ -112,7 +112,13 @@ textarea{resize:vertical;line-height:1.55}
 .empty{padding:34px 18px;text-align:center;color:var(--ink-2);font-size:13.5px;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);line-height:1.6}
 
 /* ── todo ───────────────────────────────── */
-.todo{display:flex;align-items:center;gap:11px;padding:13px 14px;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow)}
+.todo{position:relative;display:flex;align-items:center;gap:9px;padding:13px 12px 13px 8px;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow)}
+/* 손잡이에서 시작한 세로 제스처는 화면 스크롤이 아니라 순서 바꾸기로 쓴다 */
+.todo__grip{flex:none;width:24px;height:34px;padding:0;border:0;background:transparent;color:var(--ink-2);font-size:15px;line-height:1;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.todo__grip:active{cursor:grabbing}
+.todo.has-bg .todo__grip{color:#4b5763}
+.todo.is-drag{z-index:5;box-shadow:0 10px 26px rgba(16,21,25,.22)}
+#todoList.is-sorting .todo:not(.is-drag){transition:transform .18s cubic-bezier(.2,.8,.2,1)}
 .check{flex:none;width:26px;height:26px;padding:0;border:1.5px solid var(--line);border-radius:9px;background:var(--surface);font-size:14px;line-height:1;cursor:pointer}
 .todo.done .check{background:var(--ink);border-color:var(--ink);color:var(--ink-on)}
 .todo .text{flex:1;min-width:0;padding:0;border:0;background:transparent;text-align:left;font-size:15px;font-weight:500;cursor:pointer;word-break:break-word}
@@ -620,6 +626,7 @@ function renderTodo() {
   }
   $("todoList").innerHTML = db.todos.map(t => `
     <div class="todo${t.done ? " done" : ""}${t.bg ? " has-bg" : ""}" data-id="${t.id}" style="${esc(t.bg || "")}">
+      <button class="todo__grip" aria-label="${esc(t.text)} 순서 옮기기 · 위아래로 끌거나 방향키">≡</button>
       <button class="check" data-t="toggle" aria-label="${t.done ? "완료 취소" : "완료 표시"}">${t.done ? "✓" : ""}</button>
       <button class="text" data-t="edit">${esc(t.text)}</button>
       <button class="icon" data-t="color" aria-label="배경색 고르기">◐</button>
@@ -637,6 +644,100 @@ $("todoList").addEventListener("click", e => {
   if (b.dataset.t === "color") openColor(t);
   if (b.dataset.t === "edit") openTodo(t);
   if (b.dataset.t === "del") { db.todos = db.todos.filter(v => v.id !== id); save(); renderTodo(); toast("할일을 삭제했습니다"); if (tpl !== "custom") refillMsg(); }
+});
+
+/* ── 할일 순서 바꾸기 (손잡이를 위아래로) ── */
+let sort = null;
+
+function moveTodo(from, to) {
+  if (from === to || from < 0 || to < 0 || to >= db.todos.length) return false;
+  db.todos.splice(to, 0, db.todos.splice(from, 1)[0]);
+  save(); renderTodo();
+  if (tpl !== "custom") refillMsg();
+  return true;
+}
+
+$("todoList").addEventListener("pointerdown", e => {
+  const grip = e.target.closest(".todo__grip");
+  if (!grip || e.button > 0) return;
+  const rows = [...$("todoList").querySelectorAll(".todo")];
+  const from = rows.indexOf(grip.closest(".todo"));
+  if (from < 0) return;
+
+  const sy = window.scrollY;
+  const box = rows[from].getBoundingClientRect();
+  sort = {
+    rows, from, to: from, pid: e.pointerId,
+    row: rows[from], h: box.height,
+    y: e.clientY + sy,
+    /* 문서 좌표로 재둬야 드래그 중 화면이 밀려도 계산이 어긋나지 않는다 */
+    mid: rows.map(r => { const b = r.getBoundingClientRect(); return b.top + sy + b.height / 2; }),
+    /* .list의 gap을 직접 읽어 CSS와 어긋날 일이 없게 한다 */
+    gap: rows.length > 1
+      ? rows[1].getBoundingClientRect().top - rows[0].getBoundingClientRect().bottom
+      : 8
+  };
+  $("todoList").classList.add("is-sorting");
+  rows[from].classList.add("is-drag");
+  try { grip.setPointerCapture(e.pointerId); } catch (err) {}
+  e.preventDefault();
+});
+
+window.addEventListener("pointermove", e => {
+  if (!sort || e.pointerId !== sort.pid) return;
+  if (e.cancelable) e.preventDefault();
+
+  /* 목록 끝으로 끌고 갈 때 따라 스크롤 */
+  const edge = 90, vh = window.innerHeight;
+  if (e.clientY < edge) window.scrollBy(0, -Math.min(16, (edge - e.clientY) / 3));
+  else if (e.clientY > vh - edge) window.scrollBy(0, Math.min(16, (e.clientY - (vh - edge)) / 3));
+
+  const dy = e.clientY + window.scrollY - sort.y;
+  sort.row.style.transform = `translate3d(0,${dy}px,0)`;
+
+  const c = sort.mid[sort.from] + dy;
+  let to = sort.from;
+  sort.mid.forEach((m, i) => {
+    if (i === sort.from) return;
+    if (i < sort.from && c < m) to = Math.min(to, i);
+    if (i > sort.from && c > m) to = Math.max(to, i);
+  });
+  if (to !== sort.to) { sort.to = to; buzz(6); }
+
+  /* 자리를 비켜주는 줄들은 끌고 있는 줄의 높이만큼만 움직이면 된다 */
+  const shift = sort.h + sort.gap;
+  sort.rows.forEach((r, i) => {
+    if (i === sort.from) return;
+    const d = (i > sort.from && i <= sort.to) ? -shift
+      : (i < sort.from && i >= sort.to) ? shift : 0;
+    r.style.transform = d ? `translate3d(0,${d}px,0)` : "";
+  });
+}, { passive: false });
+
+function endSort() {
+  if (!sort) return;
+  const { from, to, rows } = sort;
+  $("todoList").classList.remove("is-sorting");
+  rows.forEach(r => { r.style.transform = ""; r.classList.remove("is-drag"); });
+  sort = null;
+  if (moveTodo(from, to)) buzz(12);
+}
+window.addEventListener("pointerup", endSort);
+window.addEventListener("pointercancel", endSort);
+
+/* 손잡이에 초점을 두고 방향키로도 옮길 수 있게 */
+$("todoList").addEventListener("keydown", e => {
+  const grip = e.target.closest(".todo__grip");
+  if (!grip) return;
+  const dir = e.key === "ArrowUp" ? -1 : e.key === "ArrowDown" ? 1 : 0;
+  if (!dir) return;
+  e.preventDefault();
+  const rows = [...$("todoList").querySelectorAll(".todo")];
+  const from = rows.indexOf(grip.closest(".todo"));
+  const to = from + dir;
+  if (!moveTodo(from, to)) return;
+  const next = $("todoList").querySelectorAll(".todo__grip")[to];
+  if (next) next.focus();
 });
 
 $("resetColors").onclick = () => { db.todos.forEach(t => t.bg = ""); save(); renderTodo(); };
